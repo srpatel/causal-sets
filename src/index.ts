@@ -1,9 +1,10 @@
 import App from "./App";
 import * as PIXI from "pixi.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const app = new App();
-  document.body.appendChild(app.view);
+  await app.initialise();
+  document.body.appendChild(app.canvas);
 
   app.setSize(window.innerWidth, window.innerHeight);
   window.addEventListener("resize", () => {

@@ -8,8 +8,7 @@ export default class Node extends PIXI.Container {
 
     this.addChild(this.g);
 
-    this.g.beginFill(0xffffff);
-    this.g.drawCircle(0, 0, 10);
+    this.g.circle(0, 0, 10).fill(0xffffff);
   }
 
   isPast(node: Node): boolean {

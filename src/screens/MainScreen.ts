@@ -25,8 +25,7 @@ export default class MainScreen extends Screen {
       this.addChild(holder);
 
       const btn = new PIXI.Graphics();
-      btn.beginFill(0xffffff);
-      btn.drawCircle(0, 0, 30);
+      btn.circle(0, 0, 30).fill(0xffffff);
 
       const txt = new PIXI.Text(
         holder === this.btnMinus ? "-" : holder === this.btnRegen ? "*" : "+",

@@ -6,7 +6,7 @@
   "dependencies": {
     "@types/underscore": "^1.11.15",
     "pixi-actions": "^1.1.10",
-    "pixi.js": "^7.3.2",
+    "pixi.js": "^8.1.0",
     "underscore": "^1.13.6"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@ import { Actions } from "pixi-actions";
 import Screen from "@screens/Screen";
 import MainScreen from "@screens/MainScreen";
 
-export default class App extends PIXI.Application<HTMLCanvasElement> {
+export default class App extends PIXI.Application {
   static instance: App;
 
   private static TARGET_WIDTH = 1200;
@@ -15,7 +15,13 @@ export default class App extends PIXI.Application<HTMLCanvasElement> {
   private screenHeight: number;
 
   constructor() {
-    super({
+    super();
+
+    App.instance = this;
+  }
+  
+  async initialise() {
+    await this.init({
       backgroundColor: 0xffdfbb,
       antialias: true,
       autoDensity: true,
@@ -23,11 +29,9 @@ export default class App extends PIXI.Application<HTMLCanvasElement> {
       eventMode: "auto"
     });
 
-    App.instance = this;
-
     this.setScreen(new MainScreen());
 
-    PIXI.Ticker.shared.add((delta) => Actions.tick(delta / 60));
+    PIXI.Ticker.shared.add((tick) => Actions.tick(tick.deltaTime / 60));
   }
 
   setScreen(screen: Screen) {

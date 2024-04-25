@@ -24,11 +24,10 @@ export default class Spacetime extends PIXI.Container {
 
     this.lightCone.visible = false;
     const cone = new PIXI.Polygon(0, 0, 2000, 2000, -2000, 2000, 0, 0);
-    this.lightCone.beginFill(0xff0000, 0.2);
-    this.lightCone.drawPolygon(cone);
+    this.lightCone.poly(cone.points).fill(0xff0000);
+    this.lightCone.alpha = 0.2;
 
     // Draw the shape (diamond, for now)
-    this.area.beginFill(0xffffff);
     const size = 400;
     // prettier-ignore
     this.shape = new PIXI.Polygon(
@@ -38,7 +37,7 @@ export default class Spacetime extends PIXI.Container {
       -size, 0,
       0, -size * 2
     );
-    this.area.drawShape(this.shape);
+    this.area.poly(this.shape.points).fill(0xffffff);
   }
 
   sprinklePoints(num: number) {
