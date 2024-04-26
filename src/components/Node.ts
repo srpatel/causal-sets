@@ -3,12 +3,12 @@ import * as PIXI from "pixi.js";
 export default class Node extends PIXI.Container {
   private past: Node[] = [];
   private g: PIXI.Graphics = new PIXI.Graphics();
-  constructor() {
+  constructor(shape: "circle" | "star") {
     super();
 
     this.addChild(this.g);
 
-    this.g.circle(0, 0, 6).fill(0xffffff);
+    this.g.circle(0, 0, shape == "circle" ? 4 : 10).fill(0xffffff);
   }
 
   isPast(node: Node): boolean {

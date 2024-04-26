@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js";
+import _ from "underscore";
 import { Actions } from "pixi-actions";
 
 import App from "@/App";
@@ -11,11 +12,12 @@ export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null, null];
   private highlighter: Diamond = new Diamond({ isBackground: false });
   private selectedDiamond: Diamond = null;
+  private deck: Diamond[] = [];
   private board: Board;
   constructor() {
     super();
 
-    this.board = new Board((d: Diamond) => {
+    this.board = new Board(4, (d: Diamond) => {
       if (this.selectedDiamond) {
         const index = this.diamonds.indexOf(this.selectedDiamond);
         this.diamonds[index] = null;
@@ -43,6 +45,20 @@ export default class MainScreen extends Screen {
     this.highlighter.scale.set(1.2);
     this.highlighter.visible = false;
 
+    const deckSize = this.board.dimension * this.board.dimension + 4;
+    for (let i = 0; i < deckSize; i++) {
+      const d = new Diamond({ isBackground: false });
+      if (i < 6) {
+        // Scoring diamond, one of four types
+        d.scoringPoint(i);
+      } else {
+        // Normal diamond
+        d.sprinklePoints(1 + Math.floor(Math.random() * 3));
+      }
+      this.deck.push(d);
+    }
+    this.deck = _.shuffle(this.deck);
+
     // Draw four diamonds which are our next pieces (one in each corner, pre-filled with dots)
     for (let i = 0; i < 4; i++) {
       this.drawDiamond(i);
@@ -52,11 +68,11 @@ export default class MainScreen extends Screen {
   }
 
   private drawDiamond(pos: number) {
-    const d = new Diamond({ isBackground: false });
+    const d = this.deck.pop();
     this.diamonds[pos] = d;
     d.eventMode = "static";
     d.cursor = "pointer";
-    d.sprinklePoints(1 + Math.floor(Math.random() * 3));
+
     this.addChild(d);
 
     // Click the diamond to select it

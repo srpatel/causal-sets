@@ -4,7 +4,7 @@ import Diamond from "@/components/Diamond";
 import Node from "@/components/Node";
 
 export default class Board extends PIXI.Container {
-  private static readonly DIMENSION = [4, 4];
+  dimension: number;
   private backgroundDiamonds: Diamond[] = [];
   private background: PIXI.Container = new PIXI.Container();
   private foregroundDiamonds: Diamond[] = [];
@@ -13,9 +13,13 @@ export default class Board extends PIXI.Container {
   private nodesHolder: PIXI.Container = new PIXI.Container();
   private onClickBackgroundDiamond: (d: Diamond) => void;
   private edgesHolder: PIXI.Graphics = new PIXI.Graphics();
-  constructor(onClickBackgroundDiamond: (d: Diamond) => void) {
+  constructor(
+    dimension: number,
+    onClickBackgroundDiamond: (d: Diamond) => void,
+  ) {
     super();
 
+    this.dimension = dimension;
     this.onClickBackgroundDiamond = onClickBackgroundDiamond;
 
     this.addChild(this.background);
@@ -23,11 +27,11 @@ export default class Board extends PIXI.Container {
     this.addChild(this.edgesHolder);
     this.addChild(this.nodesHolder);
 
-    this.edgesHolder.setStrokeStyle({width: 1, color: 0})
+    this.edgesHolder.setStrokeStyle({ width: 2, color: 0 });
 
     // Draw a bunch of diamonds to make the board
-    for (let i = 0; i < Board.DIMENSION[0]; i++) {
-      for (let j = 0; j < Board.DIMENSION[1]; j++) {
+    for (let i = 0; i < this.dimension; i++) {
+      for (let j = 0; j < this.dimension; j++) {
         const d = new Diamond({ isBackground: true });
         d.coords = [i, j];
         d.eventMode = "static";
@@ -54,7 +58,9 @@ export default class Board extends PIXI.Container {
   }
 
   positionDiamond(diamond: Diamond) {
-    let x = (diamond.coords[0] + diamond.coords[1] - (Board.DIMENSION[0] - 1)) * Diamond.WIDTH;
+    let x =
+      (diamond.coords[0] + diamond.coords[1] - (this.dimension - 1)) *
+      Diamond.WIDTH;
     let y = (diamond.coords[0] - diamond.coords[1]) * Diamond.HEIGHT;
     diamond.position.set(x, y);
   }
@@ -65,10 +71,10 @@ export default class Board extends PIXI.Container {
     this.foreground.addChild(diamond);
     this.positionDiamond(diamond);
     for (const p of diamond.points) {
-        p.x += diamond.x;
-        p.y += diamond.y;
-        this.nodes.push(p);
-        this.nodesHolder.addChild(p);
+      p.x += diamond.x;
+      p.y += diamond.y;
+      this.nodes.push(p);
+      this.nodesHolder.addChild(p);
     }
     this.drawEdges();
   }
@@ -81,16 +87,16 @@ export default class Board extends PIXI.Container {
     // Extract all points from nodes
     const points = [];
     for (const d of this.foregroundDiamonds) {
-        for (const p of d.points) {
-            points.push({
-                point: p,
-                diamond: d,
-                x: p.x,
-                y: p.y,
-            });
-            p.clearPast();
-            p.setColour(0x7ba0d9);
-        }
+      for (const p of d.points) {
+        points.push({
+          point: p,
+          diamond: d,
+          x: p.x,
+          y: p.y,
+        });
+        p.clearPast();
+        //p.setColour(0x7ba0d9);
+      }
     }
     const sortedPoints = _.sortBy(points, (n) => -n.y);
     const roots = [...points];
@@ -138,8 +144,8 @@ export default class Board extends PIXI.Container {
     }
 
     // Recolour the root nodes
-    for (const r of roots) {
+    /*for (const r of roots) {
       r.point.setColour(0xff0000);
-    }
+    }*/
   }
 }

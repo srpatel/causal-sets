@@ -44,7 +44,21 @@ export default class Diamond extends PIXI.Container {
   }
 
   private static makeColourComponent() {
-    return Math.random() * 0.3 + 0.7;
+    return 1; //Math.random() * 0.3 + 0.7;
+  }
+
+  scoringPoint(type: number) {
+    // TODO: type
+    // - 0 = +1 for each spacelike node
+    // - 1 = +1 for each connection
+    // - 2 = +5 points if a post
+    // - 3 = +1 point for nodes below
+    // For now, all of them are +1 point for connections
+    const node = new Node("star");
+    node.setColour(0xD7AB10);
+    this.pointsHolder.addChild(node);
+    node.position.set(0, 0);
+    this.points.push(node);
   }
 
   sprinklePoints(num: number) {
@@ -65,8 +79,8 @@ export default class Diamond extends PIXI.Container {
       }
 
       // Inside the area! Put a point here.
-      const node = new Node();
-      node.setColour(0x7ba0d9);
+      const node = new Node("circle");
+      node.setColour(0);
       this.pointsHolder.addChild(node);
       node.position.set(x, y);
       this.points.push(node);
