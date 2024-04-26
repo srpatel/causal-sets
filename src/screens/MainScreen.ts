@@ -7,12 +7,14 @@ import Screen from "@screens/Screen";
 import Spacetime from "@/components/Spacetime";
 import Diamond from "@/components/Diamond";
 import Board from "@/components/Board";
+import ObjectivePanel from "@/components/ObjectivePanel";
 
 export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null, null];
   private highlighter: Diamond = new Diamond({ isBackground: false });
   private selectedDiamond: Diamond = null;
   private deck: Diamond[] = [];
+  private objectivePanels: ObjectivePanel[] = [];
   private board: Board;
   constructor() {
     super();
@@ -64,6 +66,19 @@ export default class MainScreen extends Screen {
       this.drawDiamond(i);
     }
 
+    // Add three/four scoring panels
+    // - 1pt per node in longest chain (hover over scoring panel to see longest chain)
+    // - 1pt for each connection to (gold) (hover to see golds + connections)
+    // - 10pt for each post (hover over scoring panel to see the posts)
+    // - 3pt for each root node (hover to see)
+    this.objectivePanels.push(new ObjectivePanel());
+    this.objectivePanels.push(new ObjectivePanel());
+    this.objectivePanels.push(new ObjectivePanel());
+    this.objectivePanels.push(new ObjectivePanel());
+    for (const o of this.objectivePanels)
+      this.addChild(o)
+    // Update scoring recalculates all of them.
+
     this.addChild(this.board);
   }
 
@@ -112,10 +127,18 @@ export default class MainScreen extends Screen {
       );
     }
 
-    if (this.selectedDiamond)
+    if (this.selectedDiamond) {
       this.highlighter.position.set(
         this.selectedDiamond.x,
         this.selectedDiamond.y,
       );
+    }
+
+    // Objective panels
+    const dy = (height / this.objectivePanels.length);
+    for (let i = 0; i < this.objectivePanels.length; i++) {
+      const o = this.objectivePanels[i];
+      o.position.set(width - o.width / 2 - 50, i * dy + dy/2);
+    }
   }
 }
