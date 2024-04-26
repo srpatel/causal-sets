@@ -29,6 +29,7 @@ export default class MainScreen extends Screen {
         // Place this diamond ontop of the board in the right place.
         // TODO : Don't allow placing where there is already a diamond
         this.selectedDiamond.position.set(d.x, d.y);
+        this.selectedDiamond.coords = [...d.coords];
         this.board.addDiamond(this.selectedDiamond);
         this.selectedDiamond = null;
         this.updateSelectedDiamond();

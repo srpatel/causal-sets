@@ -9,6 +9,7 @@ import Node from "./Node";
 export default class Diamond extends PIXI.Container {
   static readonly HEIGHT = 100;
   static readonly WIDTH = 50;
+  coords = [-1, -1];
   private area: PIXI.Graphics = new PIXI.Graphics();
   private pointsHolder: PIXI.Container = new PIXI.Container();
   private shape: PIXI.Polygon;
