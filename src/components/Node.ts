@@ -23,6 +23,10 @@ export default class Node extends PIXI.Container {
     this.past.push(node);
   }
 
+  clearPast() {
+    this.past = [];
+  }
+
   setColour(c: number) {
     this.g.tint = c;
   }

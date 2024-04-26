@@ -12,7 +12,7 @@ export default class Diamond extends PIXI.Container {
   private area: PIXI.Graphics = new PIXI.Graphics();
   private pointsHolder: PIXI.Container = new PIXI.Container();
   private shape: PIXI.Polygon;
-  private points: Node[] = [];
+  points: Node[] = [];
   constructor(props: { isBackground: boolean }) {
     super();
 
@@ -47,6 +47,7 @@ export default class Diamond extends PIXI.Container {
     this.pointsHolder.removeChildren();
 
     const targetNumPoints = num;
+    // TODO : More efficient, and don't overlap edge
     while (this.points.length < targetNumPoints) {
       const x = Math.random() * this.area.width - this.area.width / 2;
       const y = Math.random() * this.area.height - this.area.height / 2;
