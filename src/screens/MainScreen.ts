@@ -4,86 +4,77 @@ import { Actions } from "pixi-actions";
 import App from "@/App";
 import Screen from "@screens/Screen";
 import Spacetime from "@/components/Spacetime";
+import Diamond from "@/components/Diamond";
 
 export default class MainScreen extends Screen {
-  private spacetime: Spacetime;
-  private numPoints: number = 10;
-  private btnMinus: PIXI.Container = new PIXI.Container();
-  private btnRegen: PIXI.Container = new PIXI.Container();
-  private btnPlus: PIXI.Container = new PIXI.Container();
+  private diamonds: Diamond[] = [];
+  private backgroundDiamonds: Diamond[] = [];
+  private board: PIXI.Container = new PIXI.Container();
   constructor() {
     super();
 
-    this.spacetime = new Spacetime();
-    this.addChild(this.spacetime);
+    // Draw a bunch of diamonds to make the board
+    const dimension = [4, 4];
+    for (let i = 0; i < dimension[0]; i++) {
+      for (let j = 0; j < dimension[1]; j++) {
+        const d = new Diamond({ isBackground: true });
+        d.eventMode = "static";
+        d.cursor = "pointer";
+        let x = (i + j - (dimension[0] - 1)) * Diamond.WIDTH;
+        let y = (i - j) * Diamond.HEIGHT;
+        d.position.set(x, y);
+        d.alpha = 0.2;
+        this.backgroundDiamonds.push(d);
+        this.board.addChild(d);
 
-    this.recalc();
+        // Hover over diamond to make opaque!
+        d.on("pointerenter", () => {
+          d.alpha = 1;
+        });
+        d.on("pointerleave", () => {
+          d.alpha = 0.2;
+        });
 
-    // Toolbox with three buttons (shape toggle, sprinkle quantity toggle, RUN)
-    // Plus and minus buttons...
-    for (const holder of [this.btnMinus, this.btnRegen, this.btnPlus]) {
-      this.addChild(holder);
-
-      const btn = new PIXI.Graphics();
-      btn.circle(0, 0, 30).fill(0xffffff);
-
-      const txt = new PIXI.Text(
-        holder === this.btnMinus ? "-" : holder === this.btnRegen ? "*" : "+",
-        {
-          fontFamily: "Arial",
-          fontSize: 48,
-          fill: 0,
-          align: "center",
-        },
-      );
-      txt.anchor.set(0.5);
-      if (holder === this.btnMinus) {
-        txt.position.y = -3;
-      } else if (holder === this.btnRegen) {
-        txt.position.y = 10;
+        // Click to place the selected diamond here...
+        // ...
+        // Recalculate (score +) links
+        // ...
       }
-
-      const hitbox = new PIXI.Sprite(PIXI.Texture.WHITE);
-      hitbox.width = btn.width;
-      hitbox.height = btn.height;
-      hitbox.position.set(-btn.width / 2, -btn.height / 2);
-      hitbox.eventMode = "static";
-      hitbox.cursor = "pointer";
-      hitbox.alpha = 0;
-      hitbox.on("pointerdown", () => {
-        if (holder === this.btnMinus) {
-          this.numPoints -= 5;
-        } else if (holder === this.btnPlus) {
-          this.numPoints += 5;
-        }
-        if (this.numPoints <= 0) {
-          this.numPoints = 5;
-        } else if (this.numPoints >= 100) {
-          this.numPoints = 100;
-        }
-        this.recalc();
-      });
-      holder.addChild(hitbox);
-      holder.addChild(btn);
-      holder.addChild(txt);
     }
-  }
 
-  recalc() {
-    this.spacetime.sprinklePoints(this.numPoints);
-    this.spacetime.drawEdges();
+    // Draw four diamonds which are our next pieces (one in each corner, pre-filled with dots)
+    for (let i = 0; i < 4; i++) {
+      const d = new Diamond({ isBackground: false });
+      this.diamonds.push(d);
+      d.eventMode = "static";
+      d.cursor = "pointer";
+      d.sprinklePoints(1 + Math.floor(Math.random() * 3));
+      this.addChild(d);
+
+      // Click the diamond to select it
+      // - Remove all borders
+      // - Add border to this one
+    }
+
+    this.addChild(this.board);
   }
 
   setSize(width: number, height: number) {
     if (!width || !height) return;
-    this.spacetime.position.set(width / 2, height / 2);
-    // Set scale of spacetime such that it fills the screen
-    const sx = (width * 0.8) / 800;
-    const sy = (height * 0.8) / 1600;
-    this.spacetime.scale.set(Math.min(sx, sy));
+    this.board.position.set(width / 2, height / 2);
 
-    this.btnRegen.position.set(width / 2, height - this.btnRegen.height);
-    this.btnMinus.position.set(this.btnRegen.x - 120, this.btnRegen.y);
-    this.btnPlus.position.set(this.btnRegen.x + 120, this.btnRegen.y);
+    for (let i = 0; i < 4; i++) {
+      const d = this.diamonds[i];
+      const x = i % 2;
+      const y = Math.floor(i / 2);
+      d.position.set(
+        width / 2 + (x - 0.5) * this.board.width,
+        height / 2 + (y - 0.5) * this.board.height * 0.6,
+      );
+    }
+    // Set scale of spacetime such that it fills the screen
+    /*const sx = (width * 0.8) / 800;
+    const sy = (height * 0.8) / 1600;
+    this.spacetime.scale.set(Math.min(sx, sy));*/
   }
 }
