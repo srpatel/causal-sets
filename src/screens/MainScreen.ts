@@ -71,12 +71,11 @@ export default class MainScreen extends Screen {
     // - 1pt for each connection to (gold) (hover to see golds + connections)
     // - 10pt for each post (hover over scoring panel to see the posts)
     // - 3pt for each root node (hover to see)
-    this.objectivePanels.push(new ObjectivePanel());
-    this.objectivePanels.push(new ObjectivePanel());
-    this.objectivePanels.push(new ObjectivePanel());
-    this.objectivePanels.push(new ObjectivePanel());
-    for (const o of this.objectivePanels)
-      this.addChild(o)
+    this.objectivePanels.push(new ObjectivePanel(0));
+    this.objectivePanels.push(new ObjectivePanel(1));
+    this.objectivePanels.push(new ObjectivePanel(2));
+    this.objectivePanels.push(new ObjectivePanel(3));
+    for (const o of this.objectivePanels) this.addChild(o);
     // Update scoring recalculates all of them.
 
     this.addChild(this.board);
@@ -135,10 +134,10 @@ export default class MainScreen extends Screen {
     }
 
     // Objective panels
-    const dy = (height / this.objectivePanels.length);
+    const dy = height / this.objectivePanels.length;
     for (let i = 0; i < this.objectivePanels.length; i++) {
       const o = this.objectivePanels[i];
-      o.position.set(width - o.width / 2 - 50, i * dy + dy/2);
+      o.position.set(width - o.width / 2 - 50, i * dy + dy / 2);
     }
   }
 }

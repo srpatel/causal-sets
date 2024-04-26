@@ -19,15 +19,16 @@ export default class App extends PIXI.Application {
 
     App.instance = this;
   }
-  
+
   async initialise() {
     await this.init({
       backgroundColor: 0xffdfbb,
       antialias: true,
       autoDensity: true,
       resolution: window.devicePixelRatio,
-      eventMode: "auto"
+      eventMode: "auto",
     });
+    await PIXI.Assets.load(["fredoka.fnt"]);
 
     this.setScreen(new MainScreen());
 
