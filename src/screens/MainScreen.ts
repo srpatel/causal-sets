@@ -55,7 +55,7 @@ export default class MainScreen extends Screen {
     this.diamonds[pos] = d;
     d.eventMode = "static";
     d.cursor = "pointer";
-    d.sprinklePoints(0 + Math.floor(Math.random() * 3));
+    d.sprinklePoints(1 + Math.floor(Math.random() * 3));
     this.addChild(d);
 
     // Click the diamond to select it

@@ -29,14 +29,21 @@ export default class Diamond extends PIXI.Container {
       -Diamond.WIDTH, 0,
       0, -Diamond.HEIGHT
     );
-    this.area.poly(this.shape.points).fill(0xffffff);
-
+    
     if (props.isBackground) {
+      this.area.poly(this.shape.points).fill(0xffffff);
         this.area.poly(this.shape.points).stroke({
             color: 0,
             width: 2,
         });
+    } else {
+      const c = new PIXI.Color([Diamond.makeColourComponent(), Diamond.makeColourComponent(), Diamond.makeColourComponent()]);
+      this.area.poly(this.shape.points).fill(c.toNumber());
     }
+  }
+
+  private static makeColourComponent() {
+    return Math.random() * 0.3 + 0.7;
   }
 
   sprinklePoints(num: number) {
