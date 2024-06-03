@@ -3,6 +3,7 @@ import { Actions } from "pixi-actions";
 
 import Screen from "@screens/Screen";
 import MainScreen from "@screens/MainScreen";
+import Colour from "./utils/Colour";
 
 export default class App extends PIXI.Application {
   static instance: App;
@@ -22,13 +23,13 @@ export default class App extends PIXI.Application {
 
   async initialise() {
     await this.init({
-      backgroundColor: 0xffdfbb,
+      backgroundColor: Colour.DARK,
       antialias: true,
       autoDensity: true,
       resolution: window.devicePixelRatio,
       eventMode: "auto",
     });
-    await PIXI.Assets.load(["fredoka.fnt"]);
+    await PIXI.Assets.load(["fredoka.fnt", "spritesheet.json"]);
 
     this.setScreen(new MainScreen());
 

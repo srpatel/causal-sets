@@ -4,17 +4,18 @@ import { Actions } from "pixi-actions";
 
 import App from "@/App";
 import Screen from "@screens/Screen";
-import Node from "./Node";
+import Node, { ScoringType } from "./Node";
+import Colour from "@/utils/Colour";
 
 export default class Diamond extends PIXI.Container {
   static readonly HEIGHT = 100;
-  static readonly WIDTH = 50;
+  static readonly WIDTH = 100;
   coords = [-1, -1];
   private area: PIXI.Graphics = new PIXI.Graphics();
   private pointsHolder: PIXI.Container = new PIXI.Container();
   private shape: PIXI.Polygon;
   points: Node[] = [];
-  constructor(props: { isBackground: boolean }) {
+  constructor(props: { isBackground: boolean, colour?: PIXI.ColorSource }) {
     super();
 
     // Put the Shape in the middle
@@ -30,32 +31,22 @@ export default class Diamond extends PIXI.Container {
       -Diamond.WIDTH, 0,
       0, -Diamond.HEIGHT
     );
+
+    const colour = props.colour ?? Colour.SPACETIME_BG;
     
     if (props.isBackground) {
-      this.area.poly(this.shape.points).fill(0xffffff);
+      this.area.poly(this.shape.points).fill(colour);
         this.area.poly(this.shape.points).stroke({
             color: 0,
             width: 2,
         });
     } else {
-      const c = new PIXI.Color([Diamond.makeColourComponent(), Diamond.makeColourComponent(), Diamond.makeColourComponent()]);
-      this.area.poly(this.shape.points).fill(c.toNumber());
+      this.area.poly(this.shape.points).fill(colour);
     }
   }
 
-  private static makeColourComponent() {
-    return 1; //Math.random() * 0.3 + 0.7;
-  }
-
-  scoringPoint(type: number) {
-    // TODO: type
-    // - 0 = +1 for each spacelike node
-    // - 1 = +1 for each connection
-    // - 2 = +5 points if a post
-    // - 3 = +1 point for nodes below
-    // For now, all of them are +1 point for connections
-    const node = new Node("star");
-    node.setColour(0xD7AB10);
+  scoringPoint(type: ScoringType) {
+    const node = new Node(type);
     this.pointsHolder.addChild(node);
     node.position.set(0, 0);
     this.points.push(node);
@@ -79,8 +70,7 @@ export default class Diamond extends PIXI.Container {
       }
 
       // Inside the area! Put a point here.
-      const node = new Node("circle");
-      node.setColour(0);
+      const node = new Node("normal");
       this.pointsHolder.addChild(node);
       node.position.set(x, y);
       this.points.push(node);

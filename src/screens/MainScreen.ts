@@ -8,14 +8,18 @@ import Spacetime from "@/components/Spacetime";
 import Diamond from "@/components/Diamond";
 import Board from "@/components/Board";
 import ObjectivePanel from "@/components/ObjectivePanel";
+import Font from "@/utils/Font";
+import { ScoringType } from "@/components/Node";
+import Colour from "@/utils/Colour";
 
 export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null, null];
-  private highlighter: Diamond = new Diamond({ isBackground: false });
+  private highlighter: Diamond = new Diamond({ isBackground: false, colour: Colour.HIGHLIGHT });
   private selectedDiamond: Diamond = null;
   private deck: Diamond[] = [];
   private objectivePanels: ObjectivePanel[] = [];
   private board: Board;
+  private lblScore: PIXI.BitmapText;
   constructor() {
     super();
 
@@ -38,12 +42,17 @@ export default class MainScreen extends Screen {
         this.selectedDiamond = null;
         this.updateSelectedDiamond();
 
-        // TODO : Update score?
+        // Update score
+        let score = 0;
+        for (const o of this.objectivePanels) {
+          o.calculate(this.board);
+          score += o.points;
+        }
+        this.lblScore.text = "" + score;
       }
     });
 
     this.addChild(this.highlighter);
-    this.highlighter.tint = 0xff0000;
     this.highlighter.scale.set(1.2);
     this.highlighter.visible = false;
 
@@ -51,8 +60,16 @@ export default class MainScreen extends Screen {
     for (let i = 0; i < deckSize; i++) {
       const d = new Diamond({ isBackground: false });
       if (i < 6) {
-        // Scoring diamond, one of four types
-        d.scoringPoint(i);
+        // Scoring diamond
+        const type: ScoringType[] = [
+          "chain",
+          "five",
+          "maximal",
+          "minimal",
+          "post",
+          "two"
+        ];
+        d.scoringPoint(type[i]);
       } else {
         // Normal diamond
         d.sprinklePoints(1 + Math.floor(Math.random() * 3));
@@ -67,16 +84,41 @@ export default class MainScreen extends Screen {
     }
 
     // Add three/four scoring panels
-    // - 1pt per node in longest chain (hover over scoring panel to see longest chain)
-    // - 1pt for each connection to (gold) (hover to see golds + connections)
-    // - 10pt for each post (hover over scoring panel to see the posts)
-    // - 3pt for each root node (hover to see)
-    this.objectivePanels.push(new ObjectivePanel(0));
+    /*this.objectivePanels.push(new ObjectivePanel(0));
     this.objectivePanels.push(new ObjectivePanel(1));
     this.objectivePanels.push(new ObjectivePanel(2));
-    this.objectivePanels.push(new ObjectivePanel(3));
-    for (const o of this.objectivePanels) this.addChild(o);
+    //this.objectivePanels.push(new ObjectivePanel(3)); --- antichain broken
+    this.objectivePanels.push(new ObjectivePanel(4));*/
+    for (const o of this.objectivePanels) {
+      o.calculate(this.board);
+      this.addChild(o);
+
+      o.eventMode = "static";
+      o.cursor = "pointer";
+      // Hover over an objective panel to see the highlighted nodes
+      o.on("pointerenter", () => {
+        for (const n of this.board.nodes) {
+          n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
+        }
+        this.board.edgesHolder.alpha = 0.2;
+      });
+      o.on("pointerleave", () => {
+        for (const n of this.board.nodes) {
+          n.alpha = 1;
+        }
+        this.board.edgesHolder.alpha = 1;
+      });
+    }
+
     // Update scoring recalculates all of them.
+    this.lblScore = new PIXI.BitmapText({
+      text: "0",
+      style: Font.makeFontOptions("large"),
+    });
+    this.lblScore.anchor.set(0.5);
+    this.lblScore.position.set(0, 0);
+    this.lblScore.tint = Colour.SPACETIME_BG;
+    this.addChild(this.lblScore);
 
     this.addChild(this.board);
   }
@@ -139,5 +181,8 @@ export default class MainScreen extends Screen {
       const o = this.objectivePanels[i];
       o.position.set(width - o.width / 2 - 50, i * dy + dy / 2);
     }
+
+    // Score
+    this.lblScore.position.set(100, height / 2);
   }
 }

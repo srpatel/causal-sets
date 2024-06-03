@@ -2,17 +2,19 @@ import * as PIXI from "pixi.js";
 import _ from "underscore";
 import Diamond from "@/components/Diamond";
 import Node from "@/components/Node";
+import Colour from "@/utils/Colour";
 
 export default class Board extends PIXI.Container {
   dimension: number;
   private backgroundDiamonds: Diamond[] = [];
   private background: PIXI.Container = new PIXI.Container();
   private foregroundDiamonds: Diamond[] = [];
-  private nodes: Node[] = [];
+  nodes: Node[] = [];
+  roots: Node[] = [];
   private foreground: PIXI.Container = new PIXI.Container();
   private nodesHolder: PIXI.Container = new PIXI.Container();
   private onClickBackgroundDiamond: (d: Diamond) => void;
-  private edgesHolder: PIXI.Graphics = new PIXI.Graphics();
+  edgesHolder: PIXI.Graphics = new PIXI.Graphics();
   constructor(
     dimension: number,
     onClickBackgroundDiamond: (d: Diamond) => void,
@@ -27,7 +29,7 @@ export default class Board extends PIXI.Container {
     this.addChild(this.edgesHolder);
     this.addChild(this.nodesHolder);
 
-    this.edgesHolder.setStrokeStyle({ width: 2, color: 0 });
+    this.edgesHolder.setStrokeStyle({ width: 2, color: Colour.DARK });
 
     // Draw a bunch of diamonds to make the board
     for (let i = 0; i < this.dimension; i++) {
@@ -81,6 +83,7 @@ export default class Board extends PIXI.Container {
 
   drawEdges() {
     this.edgesHolder.clear();
+    this.roots = [];
 
     // TODO : This could be made more efficient maybe... no need to recalculate old nodes?
 
@@ -94,10 +97,11 @@ export default class Board extends PIXI.Container {
           x: p.x,
           y: p.y,
         });
-        p.clearPast();
+        p.reset();
         //p.setColour(0x7ba0d9);
       }
     }
+    // topological sort
     const sortedPoints = _.sortBy(points, (n) => -n.y);
     const roots = [...points];
 
@@ -125,9 +129,6 @@ export default class Board extends PIXI.Container {
             continue;
           }
 
-          // Connect them!
-          node.point.setPast(potential.point);
-
           // This is no longer a root
           const index = roots.indexOf(potential);
           if (index >= 0) {
@@ -139,13 +140,15 @@ export default class Board extends PIXI.Container {
             .moveTo(node.x, node.y)
             .lineTo(potential.x, potential.y)
             .stroke();
+          node.point.downConnections.push(potential.point);
+          potential.point.upConnections.push(node.point);
         }
       }
     }
 
-    // Recolour the root nodes
-    /*for (const r of roots) {
-      r.point.setColour(0xff0000);
-    }*/
+    // Root nodes
+    for (const r of roots) {
+      this.roots.push(r.point);
+    }
   }
 }

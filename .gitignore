@@ -2,3 +2,6 @@
 dist/
 node_modules/
 *.idraw
+public/spritesheet.json
+public/spritesheet.png
+license.pages
