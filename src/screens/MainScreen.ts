@@ -48,12 +48,7 @@ export default class MainScreen extends Screen {
         this.updateSelectedDiamond();
 
         // Update score
-        let score = 0;
-        for (const o of this.objectivePanels) {
-          o.calculate(this.board);
-          score += o.points;
-        }
-        this.lblScore.text = "" + score;
+        this.updateScore();
       }
     });
 
@@ -132,6 +127,21 @@ export default class MainScreen extends Screen {
     this.addChild(this.board);
   }
 
+  private updateScore() {
+    let score = 0;
+
+    // Scoring objectives
+    for (const o of this.objectivePanels) {
+      o.calculate(this.board);
+      score += o.points;
+    }
+
+    // Scoring nodes
+    //score += this.board.score;
+
+    this.lblScore.text = "" + score;
+  }
+
   private updateDisplay() {
     // Delete all the diamonds in the display?
     // Add the top of each deck.
@@ -174,17 +184,14 @@ export default class MainScreen extends Screen {
   onSizeChanged() {
     const [width, height] = [this.screenWidth, this.screenHeight];
     if (!width || !height) return;
-    this.board.position.set(width / 2, height / 2);
+    this.board.position.set(width / 2, height / 2 - 100);
 
     for (let i = 0; i < this.diamonds.length; i++) {
       const d = this.diamonds[i];
       if (!d) continue;
       const x = i % 2;
       const y = height - 200;
-      d.position.set(
-        width / 2 - 200 + 200 * i,
-        y,
-      );
+      d.position.set(width / 2 - 200 + 200 * i, y);
     }
 
     if (this.selectedDiamond) {
@@ -202,6 +209,6 @@ export default class MainScreen extends Screen {
     }
 
     // Score
-    this.lblScore.position.set(100, height / 2);
+    this.lblScore.position.set(width / 2, 100);
   }
 }
