@@ -25,13 +25,22 @@ export default class MainScreen extends Screen {
   private deck3: Diamond[] = [];
   private objectivePanels: ObjectivePanel[] = [];
   private board: Board;
+  private money: number = 20;
   private lblScore: PIXI.BitmapText;
+  private lblMoney: PIXI.BitmapText;
   constructor() {
     super();
 
     this.board = new Board(4, (d: Diamond) => {
       if (this.selectedDiamond) {
         const index = this.diamonds.indexOf(this.selectedDiamond);
+        const cost = 3 - index;
+        if (this.money < cost) {
+          // TODO : Flash money, we don't have enough!
+          return;
+        }
+        this.money -= cost;
+
         this.diamonds[index] = null;
         // Remove event listener...
         this.selectedDiamond.removeAllListeners();
@@ -50,6 +59,12 @@ export default class MainScreen extends Screen {
 
         // Update score
         this.updateScore();
+        this.updateMoneyLabel();
+
+        // Is the game over?
+        if (this.money <= 0) {
+          // TODO : Game over! Place blanks, and do final scoring.
+        }
       }
     });
 
@@ -135,6 +150,19 @@ export default class MainScreen extends Screen {
     this.lblScore.position.set(0, 0);
     this.lblScore.tint = Colour.SPACETIME_BG;
     this.addChild(this.lblScore);
+
+    this.lblMoney = new PIXI.BitmapText({
+      text: "" + this.money,
+      style: Font.makeFontOptions("medium"),
+    });
+    this.lblMoney.anchor.set(0.5);
+    this.lblMoney.position.set(0, 0);
+    this.lblMoney.tint = Colour.SPACETIME_BG;
+    this.addChild(this.lblMoney);
+  }
+
+  private updateMoneyLabel() {
+    this.lblMoney.text = "" + this.money;
   }
 
   private updateScore() {
@@ -211,6 +239,10 @@ export default class MainScreen extends Screen {
     // 60% for grid
     this.board.scale.set(tileScale);
     this.board.position.set(width / 2, height * (0.1 + 0.3));
+    this.lblMoney.position.set(
+      this.board.x + Diamond.WIDTH * 2.5,
+      this.board.y + Diamond.HEIGHT * 2.5
+    );
 
     // 30% for diamond offer
     for (let i = 0; i < this.diamonds.length; i++) {
