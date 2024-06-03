@@ -79,6 +79,29 @@ export default class Board extends PIXI.Container {
       this.nodesHolder.addChild(p);
     }
     this.drawEdges();
+
+    // Update scoring of nodes!
+    for (const node of this.nodes) {
+      if (node.type == "normal") {
+        continue;
+      }
+      node.scoring = false;
+      if (node.type == "maximal") {
+        node.scoring = node.upConnections.length == 0;
+      } else if (node.type == "minimal") {
+        node.scoring = node.downConnections.length == 0;
+      } else if (node.type == "post") {
+        const p = node.getPast();
+        const f = node.getFuture();
+        node.scoring = 1 + p.size + f.size == this.nodes.length;
+      } else if (node.type == "five") {
+        node.scoring = node.numConnections() >= 5;
+      } else if (node.type == "two") {
+        node.scoring = node.numConnections() <= 2;
+      } else if (node.type == "chain") {
+        // ??? part of a longest chain?
+      }
+    }
   }
 
   drawEdges() {

@@ -57,11 +57,11 @@ export default class MainScreen extends Screen {
     this.highlighter.visible = false;
 
     // Make 3 decks
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0; i < 15; i++) {
       const d = new Diamond({ isBackground: false });
       // Scoring diamond
       const type: ScoringType[] = [
-        "chain",
+        //"chain",
         "five",
         "maximal",
         "minimal",

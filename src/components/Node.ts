@@ -17,6 +17,7 @@ export default class Node extends PIXI.Container {
   private future: Set<Node> = null;
   private g: PIXI.Graphics = new PIXI.Graphics();
   private sprite: PIXI.Sprite = null;
+  private _scoring: boolean;
   constructor(type: "normal" | ScoringType) {
     super();
 
@@ -29,10 +30,17 @@ export default class Node extends PIXI.Container {
     } else {
       // ....
       this.sprite = PIXI.Sprite.from("node-" + type + "-incomplete.png");
+      this.scoring = false;
       this.sprite.anchor.set(0.5);
       this.sprite.scale.set(0.2);
       this.addChild(this.sprite);
     }
+  }
+
+  set scoring(b: boolean) {
+    this._scoring = b;
+    const suffix = b ? "" : "-incomplete";
+    this.sprite.texture = PIXI.Texture.from("node-" + this.type + suffix + ".png");
   }
 
   isPast(node: Node): boolean {
@@ -48,6 +56,10 @@ export default class Node extends PIXI.Container {
     this.future = null;
     this.downConnections = [];
     this.upConnections = [];
+  }
+
+  numConnections() {
+    return this.downConnections.length + this.upConnections.length;
   }
 
   getPast(): Set<Node> {
