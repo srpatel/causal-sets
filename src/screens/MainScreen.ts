@@ -1,19 +1,20 @@
 import * as PIXI from "pixi.js";
 import _ from "underscore";
-import { Actions } from "pixi-actions";
 
-import App from "@/App";
 import Screen from "@screens/Screen";
-import Spacetime from "@/components/Spacetime";
 import Diamond from "@/components/Diamond";
 import Board from "@/components/Board";
 import ObjectivePanel from "@/components/ObjectivePanel";
 import Font from "@/utils/Font";
 import { ScoringType } from "@/components/Node";
 import Colour from "@/utils/Colour";
-
 export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null];
+  private diamondCosts: PIXI.Sprite[] = [
+    PIXI.Sprite.from("coins-3.png"),
+    PIXI.Sprite.from("coins-2.png"),
+    PIXI.Sprite.from("coins-1.png"),
+  ];
   private highlighter: Diamond = new Diamond({
     isBackground: false,
     colour: Colour.HIGHLIGHT,
@@ -52,6 +53,17 @@ export default class MainScreen extends Screen {
       }
     });
 
+    for (const s of this.diamondCosts) {
+      s.anchor.set(0.5);
+      s.scale.set(0.8);
+      this.addChild(s);
+    }
+
+    // Title row
+    // - title of game
+    // - settings
+    // - etc.
+    this.addChild(this.board);
     this.addChild(this.highlighter);
     this.highlighter.scale.set(1.2);
     this.highlighter.visible = false;
@@ -123,8 +135,6 @@ export default class MainScreen extends Screen {
     this.lblScore.position.set(0, 0);
     this.lblScore.tint = Colour.SPACETIME_BG;
     this.addChild(this.lblScore);
-
-    this.addChild(this.board);
   }
 
   private updateScore() {
@@ -158,6 +168,7 @@ export default class MainScreen extends Screen {
       if (deck.length > 0) {
         const d = deck.pop();
         this.diamonds[i] = d;
+        d.position.set(0, 0);
         d.eventMode = "static";
         d.cursor = "pointer";
 
@@ -188,14 +199,34 @@ export default class MainScreen extends Screen {
   onSizeChanged() {
     const [width, height] = [this.screenWidth, this.screenHeight];
     if (!width || !height) return;
-    this.board.position.set(width / 2, height / 2 - 100);
 
+    const tileScale = Math.min(
+      (0.6 * height) / (2 * Diamond.HEIGHT * this.board.dimension),
+      1,
+    );
+
+    // 10% for title bar
+    this.lblScore.position.set(width / 2, height * 0.05);
+
+    // 60% for grid
+    this.board.scale.set(tileScale);
+    this.board.position.set(width / 2, height * (0.1 + 0.3));
+
+    // 30% for diamond offer
     for (let i = 0; i < this.diamonds.length; i++) {
+      const cost = this.diamondCosts[i];
       const d = this.diamonds[i];
+      const x = width / 2 - 200 + 200 * i;
+      const y1 = height * 0.85 + Diamond.HEIGHT + 30;
+
+      cost.position.set(x, y1);
+
       if (!d) continue;
-      const x = i % 2;
-      const y = height - 200;
-      d.position.set(width / 2 - 200 + 200 * i, y);
+      const y2 = height * 0.85;
+      d.position.set(x, y2);
+
+      // Put some coins underneath to show cost
+      // ...
     }
 
     if (this.selectedDiamond) {
@@ -211,8 +242,5 @@ export default class MainScreen extends Screen {
       const o = this.objectivePanels[i];
       o.position.set(width - o.width / 2 - 50, i * dy + dy / 2);
     }
-
-    // Score
-    this.lblScore.position.set(width / 2, 100);
   }
 }
