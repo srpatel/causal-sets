@@ -8,8 +8,8 @@ import Node, { ScoringType } from "./Node";
 import Colour from "@/utils/Colour";
 
 export default class Diamond extends PIXI.Container {
-  static readonly HEIGHT = 100;
-  static readonly WIDTH = 100;
+  static readonly HEIGHT = 90;
+  static readonly WIDTH = 90;
   coords = [-1, -1];
   private area: PIXI.Graphics = new PIXI.Graphics();
   private pointsHolder: PIXI.Container = new PIXI.Container();

@@ -8,8 +8,8 @@ import Colour from "./utils/Colour";
 export default class App extends PIXI.Application {
   static instance: App;
 
-  private static TARGET_WIDTH = 1200;
-  private static TARGET_HEIGHT = 800;
+  private static TARGET_WIDTH = 800;
+  private static TARGET_HEIGHT = 1200;
 
   private currentScreen: Screen;
   private screenWidth: number;

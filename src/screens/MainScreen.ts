@@ -13,10 +13,15 @@ import { ScoringType } from "@/components/Node";
 import Colour from "@/utils/Colour";
 
 export default class MainScreen extends Screen {
-  private diamonds: Diamond[] = [null, null, null, null];
-  private highlighter: Diamond = new Diamond({ isBackground: false, colour: Colour.HIGHLIGHT });
+  private diamonds: Diamond[] = [null, null, null];
+  private highlighter: Diamond = new Diamond({
+    isBackground: false,
+    colour: Colour.HIGHLIGHT,
+  });
   private selectedDiamond: Diamond = null;
-  private deck: Diamond[] = [];
+  private deck1: Diamond[] = [];
+  private deck2: Diamond[] = [];
+  private deck3: Diamond[] = [];
   private objectivePanels: ObjectivePanel[] = [];
   private board: Board;
   private lblScore: PIXI.BitmapText;
@@ -31,8 +36,8 @@ export default class MainScreen extends Screen {
         this.selectedDiamond.removeAllListeners();
 
         // Draw a new diamond from the deck
-        const newd = this.drawDiamond(index);
-        newd.position.set(this.selectedDiamond.x, this.selectedDiamond.y);
+        this.updateDisplay();
+        this.onSizeChanged();
 
         // Place this diamond ontop of the board in the right place.
         // TODO : Don't allow placing where there is already a diamond
@@ -56,32 +61,36 @@ export default class MainScreen extends Screen {
     this.highlighter.scale.set(1.2);
     this.highlighter.visible = false;
 
-    const deckSize = this.board.dimension * this.board.dimension + 4;
-    for (let i = 0; i < deckSize; i++) {
+    // Make 3 decks
+    for (let i = 0; i < 18; i++) {
       const d = new Diamond({ isBackground: false });
-      if (i < 6) {
-        // Scoring diamond
-        const type: ScoringType[] = [
-          "chain",
-          "five",
-          "maximal",
-          "minimal",
-          "post",
-          "two"
-        ];
-        d.scoringPoint(type[i]);
-      } else {
-        // Normal diamond
-        d.sprinklePoints(1 + Math.floor(Math.random() * 3));
-      }
-      this.deck.push(d);
+      // Scoring diamond
+      const type: ScoringType[] = [
+        "chain",
+        "five",
+        "maximal",
+        "minimal",
+        "post",
+        "two",
+      ];
+      d.scoringPoint(type[i % type.length]);
+      this.deck1.push(d);
     }
-    this.deck = _.shuffle(this.deck);
+    for (let i = 0; i < 16; i++) {
+      const d = new Diamond({ isBackground: false });
+      d.sprinklePoints(1 + Math.floor(Math.random() * 3));
+      this.deck2.push(d);
+    }
+    for (let i = 0; i < 16; i++) {
+      const d = new Diamond({ isBackground: false });
+      d.sprinklePoints(0);
+      this.deck3.push(d);
+    }
+    this.deck1 = _.shuffle(this.deck1);
+    this.deck2 = _.shuffle(this.deck2);
+    this.deck3 = _.shuffle(this.deck3);
 
-    // Draw four diamonds which are our next pieces (one in each corner, pre-filled with dots)
-    for (let i = 0; i < 4; i++) {
-      this.drawDiamond(i);
-    }
+    this.updateDisplay();
 
     // Add three/four scoring panels
     /*this.objectivePanels.push(new ObjectivePanel(0));
@@ -123,25 +132,34 @@ export default class MainScreen extends Screen {
     this.addChild(this.board);
   }
 
-  private drawDiamond(pos: number) {
-    const d = this.deck.pop();
-    this.diamonds[pos] = d;
-    d.eventMode = "static";
-    d.cursor = "pointer";
+  private updateDisplay() {
+    // Delete all the diamonds in the display?
+    // Add the top of each deck.
+    // When you place a tile, animate it, a fade in a new one from the corresponding deck
+    const decks = [this.deck1, this.deck2, this.deck3];
+    for (let i = 0; i < decks.length; i++) {
+      // Only draw when there is a missing diamond...
+      if (this.diamonds[i]) continue;
+      const deck = decks[i];
+      if (deck.length > 0) {
+        const d = deck.pop();
+        this.diamonds[i] = d;
+        d.eventMode = "static";
+        d.cursor = "pointer";
 
-    this.addChild(d);
+        this.addChild(d);
 
-    // Click the diamond to select it
-    d.on("pointerdown", () => {
-      if (this.selectedDiamond == d) {
-        this.selectedDiamond = null;
-      } else {
-        this.selectedDiamond = d;
+        // Click the diamond to select it
+        d.on("pointerdown", () => {
+          if (this.selectedDiamond == d) {
+            this.selectedDiamond = null;
+          } else {
+            this.selectedDiamond = d;
+          }
+          this.updateSelectedDiamond();
+        });
       }
-      this.updateSelectedDiamond();
-    });
-
-    return d;
+    }
   }
 
   private updateSelectedDiamond() {
@@ -153,18 +171,19 @@ export default class MainScreen extends Screen {
       );
   }
 
-  setSize(width: number, height: number) {
+  onSizeChanged() {
+    const [width, height] = [this.screenWidth, this.screenHeight];
     if (!width || !height) return;
     this.board.position.set(width / 2, height / 2);
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < this.diamonds.length; i++) {
       const d = this.diamonds[i];
       if (!d) continue;
       const x = i % 2;
-      const y = Math.floor(i / 2);
+      const y = height - 200;
       d.position.set(
-        width / 2 + (x - 0.5) * this.board.width,
-        height / 2 + (y - 0.5) * this.board.height * 0.6,
+        width / 2 - 200 + 200 * i,
+        y,
       );
     }
 

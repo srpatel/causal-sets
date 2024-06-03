@@ -74,7 +74,8 @@ export default class DemoScreen extends Screen {
     this.spacetime.drawEdges();
   }
 
-  setSize(width: number, height: number) {
+  onSizeChanged() {
+    const [width, height] = [this.screenWidth, this.screenHeight];
     if (!width || !height) return;
     this.spacetime.position.set(width / 2, height / 2);
     // Set scale of spacetime such that it fills the screen
