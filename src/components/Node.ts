@@ -17,7 +17,7 @@ export default class Node extends PIXI.Container {
   private future: Set<Node> = null;
   private g: PIXI.Graphics = new PIXI.Graphics();
   private sprite: PIXI.Sprite = null;
-  private _scoring: boolean;
+  private _scoring: boolean = false;
   constructor(type: "normal" | ScoringType) {
     super();
 
@@ -41,6 +41,9 @@ export default class Node extends PIXI.Container {
     this._scoring = b;
     const suffix = b ? "" : "-incomplete";
     this.sprite.texture = PIXI.Texture.from("node-" + this.type + suffix + ".png");
+  }
+  get scoring() {
+    return this._scoring;
   }
 
   isPast(node: Node): boolean {

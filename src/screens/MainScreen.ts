@@ -65,7 +65,7 @@ export default class MainScreen extends Screen {
         "five",
         "maximal",
         "minimal",
-        "post",
+        //"post",
         "two",
       ];
       d.scoringPoint(type[i % type.length]);
@@ -73,12 +73,12 @@ export default class MainScreen extends Screen {
     }
     for (let i = 0; i < 16; i++) {
       const d = new Diamond({ isBackground: false });
-      d.sprinklePoints(1 + Math.floor(Math.random() * 3));
+      d.sprinklePoints(2 + Math.floor(Math.random() * 3));
       this.deck2.push(d);
     }
     for (let i = 0; i < 16; i++) {
       const d = new Diamond({ isBackground: false });
-      d.sprinklePoints(0);
+      d.sprinklePoints(1);
       this.deck3.push(d);
     }
     this.deck1 = _.shuffle(this.deck1);
@@ -137,7 +137,11 @@ export default class MainScreen extends Screen {
     }
 
     // Scoring nodes
-    //score += this.board.score;
+    for (const n of this.board.nodes) {
+      if (n.scoring) {
+        score += 5;
+      }
+    }
 
     this.lblScore.text = "" + score;
   }
