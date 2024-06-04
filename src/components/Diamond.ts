@@ -64,8 +64,10 @@ export default class Diamond extends PIXI.Container {
     const targetNumPoints = num;
     // TODO : More efficient, and don't overlap edge
     while (this.points.length < targetNumPoints) {
-      const x = Math.random() * this.area.width - this.area.width / 2;
-      const y = Math.random() * this.area.height - this.area.height / 2;
+      const d = Math.sqrt(Math.random()) * this.area.width * 0.9;
+      const theta = Math.random() * Math.PI * 2;
+      const x = Math.sin(theta) * d - this.area.width / 2;
+      const y = Math.cos(theta) * d - this.area.height / 2;
       if (!this.shape.contains(x, y)) {
         // Outside the area, generate another point!
         continue;
