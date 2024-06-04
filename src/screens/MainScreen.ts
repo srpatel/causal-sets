@@ -9,12 +9,15 @@ import Font from "@/utils/Font";
 import { ScoringType } from "@/components/Node";
 import Colour from "@/utils/Colour";
 import { Actions } from "pixi-actions";
+import Button from "@/components/Button";
+import App from "@/App";
 export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null];
   private infoPanel = new PIXI.Container();
   private infoDesc: PIXI.BitmapText;
   private moneyTriangle = new PIXI.Container();
   private scoreTriangle = new PIXI.Container();
+  private sharePanel = new PIXI.Container();
   private diamondCosts: PIXI.Sprite[] = [
     PIXI.Sprite.from("coins-3.png"),
     PIXI.Sprite.from("coins-2.png"),
@@ -121,9 +124,19 @@ export default class MainScreen extends Screen {
           // 1. Airdrop blank tiles
           this.board.airDropBlanks();
           // 2. Fade out diamonds
-          // ...
+          for (let i = 0; i < 3; i++) {
+            if (this.diamonds[i]) {
+              Actions.fadeOutAndRemove(this.diamonds[i], 0.2).play();
+              this.diamonds[i] = null;
+            }
+            if (this.diamondCosts[i]) {
+              Actions.fadeOut(this.diamondCosts[i], 0.2).play();
+            }
+          }
           // 3. Fade in share panel
-          // ...
+          this.sharePanel.visible = true;
+          this.sharePanel.alpha = 0;
+          Actions.fadeIn(this.sharePanel, 0.2).play();
         }
       }
     });
@@ -222,6 +235,29 @@ export default class MainScreen extends Screen {
     this.lblMoney.position.set(-20, 20);
     this.lblMoney.tint = Colour.DARK;
     this.moneyTriangle.addChild(this.lblMoney);
+
+    // Buttons
+    const b1 = new Button("btnagain", () => {
+      Actions.sequence(
+        Actions.fadeOut(this, 0.2),
+        Actions.runFunc(() => {
+          const m = new MainScreen();
+          m.alpha = 0;
+          Actions.fadeIn(m, 0.2).play();
+          App.instance.setScreen(m);
+        })
+      ).play();
+    });
+    const b2 = new Button("btnshare", () => {
+      // TODO:
+      // Copy to clipboard: "Causal Sets Game. Score: 20. Link."
+    });
+    b1.position.set(-125, 0);
+    b2.position.set(125, 0);
+    this.sharePanel.addChild(b1);
+    this.sharePanel.addChild(b2);
+    this.addChild(this.sharePanel);
+    this.sharePanel.visible = false;
   }
 
   private checkDecks() {
@@ -378,6 +414,7 @@ export default class MainScreen extends Screen {
       const y2 = height * 0.85;
       d.position.set(x, y2);
     }
+    this.sharePanel.position.set(width/2, height * 0.85);
 
     if (this.selectedDiamond) {
       this.highlighter.position.set(
