@@ -3,6 +3,7 @@ import _ from "underscore";
 import Diamond from "@/components/Diamond";
 import Node from "@/components/Node";
 import Colour from "@/utils/Colour";
+import { Actions } from "pixi-actions";
 
 export default class Board extends PIXI.Container {
   dimension: number;
@@ -67,8 +68,50 @@ export default class Board extends PIXI.Container {
     diamond.position.set(x, y);
   }
 
-  addDiamond(diamond: Diamond) {
-    // TODO : Coords?
+  airDropBlanks() {
+    let decalation = 0;
+    const dropDistance = 40;
+    // For every coord without a tile, create a blank tile and airdrop it in
+    for (let i = 0; i < this.dimension; i++) {
+      for (let j = 0; j < this.dimension; j++) {
+        let found = false;
+        for (const d of this.foregroundDiamonds) {
+          if (
+            d.coords[0] == i &&
+            d.coords[1] == j
+          ) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          const d = new Diamond({ isBackground: false });
+          d.coords = [i, j];
+          this.addDiamond(d);
+          d.alpha = 0;
+          d.position.y -= dropDistance;
+          Actions.sequence(
+            Actions.delay(decalation++ * 0.2),
+            Actions.parallel(
+              Actions.fadeIn(d, 0.4),
+              Actions.moveTo(d, d.x, d.y + dropDistance, 0.4),
+            )
+          ).play();
+        }
+      }
+    }
+  }
+
+  addDiamond(diamond: Diamond, andRecalculate: boolean = true) {
+    for (const d of this.foregroundDiamonds) {
+      if (
+        d.coords[0] == diamond.coords[0] &&
+        d.coords[1] == diamond.coords[1]
+      ) {
+        return false;
+      }
+    }
+
     this.foregroundDiamonds.push(diamond);
     this.foreground.addChild(diamond);
     this.positionDiamond(diamond);
@@ -78,6 +121,11 @@ export default class Board extends PIXI.Container {
       this.nodes.push(p);
       this.nodesHolder.addChild(p);
     }
+
+    if (!andRecalculate) {
+      return true;
+    }
+
     this.drawEdges();
 
     // Update scoring of nodes!
@@ -102,6 +150,7 @@ export default class Board extends PIXI.Container {
         // ??? part of a longest chain?
       }
     }
+    return true;
   }
 
   drawEdges() {

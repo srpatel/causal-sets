@@ -13,6 +13,8 @@ export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null];
   private infoPanel = new PIXI.Container();
   private infoDesc: PIXI.BitmapText;
+  private moneyTriangle = new PIXI.Container();
+  private scoreTriangle = new PIXI.Container();
   private diamondCosts: PIXI.Sprite[] = [
     PIXI.Sprite.from("coins-3.png"),
     PIXI.Sprite.from("coins-2.png"),
@@ -29,10 +31,34 @@ export default class MainScreen extends Screen {
   private objectivePanels: ObjectivePanel[] = [];
   private board: Board;
   private money: number = 20;
+  private score: number = 0;
+  private visibleScore: number = 0;
+  private visibleMoney: number = 20;
   private lblScore: PIXI.BitmapText;
   private lblMoney: PIXI.BitmapText;
+  private lblTitle: PIXI.BitmapText;
+  private ticker: PIXI.TickerCallback<void>;
   constructor() {
     super();
+
+    this.ticker = (tick) => {
+
+      this.visibleMoney -= (this.visibleMoney - this.money) / 5;
+      this.visibleScore -= (this.visibleScore - this.score) / 5;
+
+      // Move score and money to actual value
+      this.lblMoney.text = Math.round(this.visibleMoney) + "";
+      this.lblScore.text = Math.round(this.visibleScore) + "";
+    };
+
+    this.lblTitle = new PIXI.BitmapText({
+      text: "Causal Sets Game",
+      style: Font.makeFontOptions("large"),
+    });
+    this.lblTitle.anchor.set(0.5);
+    this.lblTitle.position.set(0, 0);
+    this.lblTitle.tint = Colour.SPACETIME_BG;
+    this.addChild(this.lblTitle);
 
     const panel = PIXI.Sprite.from("infopanel.png");
     panel.anchor.set(0.5);
@@ -50,11 +76,23 @@ export default class MainScreen extends Screen {
     this.board = new Board(4, (d: Diamond) => {
       if (this.selectedDiamond) {
         const index = this.diamonds.indexOf(this.selectedDiamond);
+        if (index < 0) {
+          return;
+        }
+
         const cost = 3 - index;
         if (this.money < cost) {
           // TODO : Flash money, we don't have enough!
           return;
         }
+        // Place this diamond ontop of the board in the right place.
+        this.selectedDiamond.position.set(d.x, d.y);
+        this.selectedDiamond.coords = [...d.coords];
+        const didAdd = this.board.addDiamond(this.selectedDiamond);
+        if (!didAdd) {
+          return;
+        }
+
         this.money -= cost;
 
         this.diamonds[index] = null;
@@ -71,21 +109,21 @@ export default class MainScreen extends Screen {
         this.updateDisplay();
         this.onSizeChanged();
 
-        // Place this diamond ontop of the board in the right place.
-        // TODO : Don't allow placing where there is already a diamond
-        this.selectedDiamond.position.set(d.x, d.y);
-        this.selectedDiamond.coords = [...d.coords];
-        this.board.addDiamond(this.selectedDiamond);
         this.selectedDiamond = null;
         this.updateSelectedDiamond();
 
         // Update score
         this.updateScore();
-        this.updateMoneyLabel();
 
         // Is the game over?
         if (this.money <= 0) {
           // TODO : Game over! Place blanks, and do final scoring.
+          // 1. Airdrop blank tiles
+          this.board.airDropBlanks();
+          // 2. Fade out diamonds
+          // ...
+          // 3. Fade in share panel
+          // ...
         }
       }
     });
@@ -134,24 +172,56 @@ export default class MainScreen extends Screen {
       });
     }
 
+    {
+      const t = PIXI.Sprite.from("triangle.png");
+      this.moneyTriangle.addChild(t);
+      t.scale.set(-1, 1);
+      t.anchor.set(0.5);
+      this.addChild(this.moneyTriangle);
+
+      const label = new PIXI.BitmapText({
+        text: "Energy",
+        style: Font.makeFontOptions("small"),
+      });
+      label.anchor.set(0.5);
+      label.position.set(-12, 65);
+      label.tint = Colour.DARK;
+      this.moneyTriangle.addChild(label);
+    }
+    {
+      const t = PIXI.Sprite.from("triangle.png");
+      this.scoreTriangle.addChild(t);
+      t.anchor.set(0.5);
+      this.addChild(this.scoreTriangle);
+
+      const label = new PIXI.BitmapText({
+        text: "Score",
+        style: Font.makeFontOptions("small"),
+      });
+      label.anchor.set(0.5);
+      label.position.set(12, 65);
+      label.tint = Colour.DARK;
+      this.scoreTriangle.addChild(label);
+    }
+
     // Update scoring recalculates all of them.
     this.lblScore = new PIXI.BitmapText({
       text: "0",
-      style: Font.makeFontOptions("large"),
+      style: Font.makeFontOptions("medium"),
     });
     this.lblScore.anchor.set(0.5);
-    this.lblScore.position.set(0, 0);
-    this.lblScore.tint = Colour.SPACETIME_BG;
-    this.addChild(this.lblScore);
+    this.lblScore.position.set(20, 20);
+    this.lblScore.tint = Colour.DARK;
+    this.scoreTriangle.addChild(this.lblScore);
 
     this.lblMoney = new PIXI.BitmapText({
       text: "" + this.money,
       style: Font.makeFontOptions("medium"),
     });
     this.lblMoney.anchor.set(0.5);
-    this.lblMoney.position.set(0, 0);
-    this.lblMoney.tint = Colour.SPACETIME_BG;
-    this.addChild(this.lblMoney);
+    this.lblMoney.position.set(-20, 20);
+    this.lblMoney.tint = Colour.DARK;
+    this.moneyTriangle.addChild(this.lblMoney);
   }
 
   private checkDecks() {
@@ -191,10 +261,6 @@ export default class MainScreen extends Screen {
     }
   }
 
-  private updateMoneyLabel() {
-    this.lblMoney.text = "" + this.money;
-  }
-
   private updateScore() {
     let score = 0;
 
@@ -211,7 +277,7 @@ export default class MainScreen extends Screen {
       }
     }
 
-    this.lblScore.text = "" + score;
+    this.score = score;
   }
 
   private updateDisplay() {
@@ -285,12 +351,16 @@ export default class MainScreen extends Screen {
     );
 
     // 10% for title bar
-    this.lblScore.position.set(width / 2, height * 0.05);
+    this.lblTitle.position.set(width / 2, height * 0.05);
 
     // 60% for grid
     this.board.scale.set(tileScale);
     this.board.position.set(width / 2, height * (0.1 + 0.3));
-    this.lblMoney.position.set(
+    this.moneyTriangle.position.set(
+      this.board.x - Diamond.WIDTH * 2.5,
+      this.board.y + Diamond.HEIGHT * 2.5,
+    );
+    this.scoreTriangle.position.set(
       this.board.x + Diamond.WIDTH * 2.5,
       this.board.y + Diamond.HEIGHT * 2.5,
     );
@@ -327,5 +397,12 @@ export default class MainScreen extends Screen {
       const o = this.objectivePanels[i];
       o.position.set(width - o.width / 2 - 50, i * dy + dy / 2);
     }
+  }
+  
+  onAddedToStage(stage: PIXI.Container<PIXI.ContainerChild>): void {
+    PIXI.Ticker.shared.add(this.ticker);
+  }
+  onRemovedFromStage(stage: PIXI.Container<PIXI.ContainerChild>): void {
+    PIXI.Ticker.shared.remove(this.ticker);
   }
 }
