@@ -112,7 +112,7 @@ export default class MainScreen extends Screen {
         this.updateDisplay();
         this.onSizeChanged();
 
-        this.selectedDiamond = null;
+        this.selectedDiamond = this.diamonds[index];
         this.updateSelectedDiamond();
 
         // Update score
@@ -120,7 +120,8 @@ export default class MainScreen extends Screen {
 
         // Is the game over?
         if (this.money <= 0) {
-          // TODO : Game over! Place blanks, and do final scoring.
+          this.selectedDiamond = null;
+          this.updateSelectedDiamond();
           // 1. Airdrop blank tiles
           this.board.airDropBlanks();
           // 2. Fade out diamonds
