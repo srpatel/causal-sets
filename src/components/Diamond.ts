@@ -10,6 +10,7 @@ import Colour from "@/utils/Colour";
 export default class Diamond extends PIXI.Container {
   static readonly HEIGHT = 90;
   static readonly WIDTH = 90;
+  scoreType: ScoringType | null = null;
   coords = [-1, -1];
   private area: PIXI.Graphics = new PIXI.Graphics();
   private pointsHolder: PIXI.Container = new PIXI.Container();
@@ -46,6 +47,7 @@ export default class Diamond extends PIXI.Container {
   }
 
   scoringPoint(type: ScoringType) {
+    this.scoreType = type;
     const node = new Node(type);
     this.pointsHolder.addChild(node);
     node.position.set(0, 0);

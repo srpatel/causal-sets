@@ -8,8 +8,11 @@ import ObjectivePanel from "@/components/ObjectivePanel";
 import Font from "@/utils/Font";
 import { ScoringType } from "@/components/Node";
 import Colour from "@/utils/Colour";
+import { Actions } from "pixi-actions";
 export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null];
+  private infoPanel = new PIXI.Container();
+  private infoDesc: PIXI.BitmapText;
   private diamondCosts: PIXI.Sprite[] = [
     PIXI.Sprite.from("coins-3.png"),
     PIXI.Sprite.from("coins-2.png"),
@@ -31,6 +34,19 @@ export default class MainScreen extends Screen {
   constructor() {
     super();
 
+    const panel = PIXI.Sprite.from("infopanel.png");
+    panel.anchor.set(0.5);
+    this.infoPanel.addChild(panel);
+    this.infoPanel.visible = false;
+    this.infoDesc = new PIXI.BitmapText({
+      text: "",
+      style: Font.makeFontOptions("small"),
+    });
+    this.infoDesc.anchor.set(0.5);
+    this.infoDesc.position.set(0, -8);
+    this.infoDesc.tint = Colour.DARK;
+    this.infoPanel.addChild(this.infoDesc);
+
     this.board = new Board(4, (d: Diamond) => {
       if (this.selectedDiamond) {
         const index = this.diamonds.indexOf(this.selectedDiamond);
@@ -46,6 +62,12 @@ export default class MainScreen extends Screen {
         this.selectedDiamond.removeAllListeners();
 
         // Draw a new diamond from the deck
+        for (let i = 0; i < 3; i++) {
+          if (this.diamonds[i]) {
+            Actions.fadeOutAndRemove(this.diamonds[i], 0.2).play();
+            this.diamonds[i] = null;
+          }
+        }
         this.updateDisplay();
         this.onSizeChanged();
 
@@ -74,45 +96,16 @@ export default class MainScreen extends Screen {
       this.addChild(s);
     }
 
-    // Title row
-    // - title of game
-    // - settings
-    // - etc.
     this.addChild(this.board);
     this.addChild(this.highlighter);
     this.highlighter.scale.set(1.2);
     this.highlighter.visible = false;
 
-    // Make 3 decks
-    for (let i = 0; i < 15; i++) {
-      const d = new Diamond({ isBackground: false });
-      // Scoring diamond
-      const type: ScoringType[] = [
-        //"chain",
-        "five",
-        "maximal",
-        "minimal",
-        //"post",
-        "two",
-      ];
-      d.scoringPoint(type[i % type.length]);
-      this.deck1.push(d);
-    }
-    for (let i = 0; i < 16; i++) {
-      const d = new Diamond({ isBackground: false });
-      d.sprinklePoints(2 + Math.floor(Math.random() * 3));
-      this.deck2.push(d);
-    }
-    for (let i = 0; i < 16; i++) {
-      const d = new Diamond({ isBackground: false });
-      d.sprinklePoints(1);
-      this.deck3.push(d);
-    }
-    this.deck1 = _.shuffle(this.deck1);
-    this.deck2 = _.shuffle(this.deck2);
-    this.deck3 = _.shuffle(this.deck3);
+    this.checkDecks();
 
     this.updateDisplay();
+
+    this.addChild(this.infoPanel);
 
     // Add three/four scoring panels
     /*this.objectivePanels.push(new ObjectivePanel(0));
@@ -161,6 +154,43 @@ export default class MainScreen extends Screen {
     this.addChild(this.lblMoney);
   }
 
+  private checkDecks() {
+    // Make 3 decks
+    if (this.deck1.length == 0) {
+      for (let i = 0; i < 15; i++) {
+        const d = new Diamond({ isBackground: false });
+        // Scoring diamond
+        const type: ScoringType[] = [
+          //"chain",
+          "five",
+          "maximal",
+          "minimal",
+          //"post",
+          "two",
+        ];
+        d.scoringPoint(type[i % type.length]);
+        this.deck1.push(d);
+      }
+      this.deck1 = _.shuffle(this.deck1);
+    }
+    if (this.deck2.length == 0) {
+      for (let i = 0; i < 16; i++) {
+        const d = new Diamond({ isBackground: false });
+        d.sprinklePoints(2 + Math.floor(Math.random() * 3));
+        this.deck2.push(d);
+      }
+      this.deck2 = _.shuffle(this.deck2);
+    }
+    if (this.deck3.length == 0) {
+      for (let i = 0; i < 16; i++) {
+        const d = new Diamond({ isBackground: false });
+        d.sprinklePoints(1);
+        this.deck3.push(d);
+      }
+      this.deck3 = _.shuffle(this.deck3);
+    }
+  }
+
   private updateMoneyLabel() {
     this.lblMoney.text = "" + this.money;
   }
@@ -200,6 +230,9 @@ export default class MainScreen extends Screen {
         d.eventMode = "static";
         d.cursor = "pointer";
 
+        d.alpha = 0;
+        Actions.sequence(Actions.delay(0.2), Actions.fadeIn(d, 0.2)).play();
+
         this.addChild(d);
 
         // Click the diamond to select it
@@ -212,16 +245,34 @@ export default class MainScreen extends Screen {
           this.updateSelectedDiamond();
         });
       }
+      this.checkDecks();
+    }
+
+    const st = this.diamonds?.[0].scoreType;
+    if (st === "chain") {
+      this.infoDesc.text = "Part of the longest chain";
+    } else if (st === "five") {
+      this.infoDesc.text = "Five or more edges";
+    } else if (st === "two") {
+      this.infoDesc.text = "Two or fewer edges";
+    } else if (st === "maximal") {
+      this.infoDesc.text = "Maximal element";
+    } else if (st === "minimal") {
+      this.infoDesc.text = "Minimal element";
+    } else if (st === "post") {
+      this.infoDesc.text = "Post";
     }
   }
 
   private updateSelectedDiamond() {
     this.highlighter.visible = !!this.selectedDiamond;
-    if (this.selectedDiamond)
+    this.infoPanel.visible = this.selectedDiamond == this.diamonds[0];
+    if (this.selectedDiamond) {
       this.highlighter.position.set(
         this.selectedDiamond.x,
         this.selectedDiamond.y,
       );
+    }
   }
 
   onSizeChanged() {
@@ -241,7 +292,7 @@ export default class MainScreen extends Screen {
     this.board.position.set(width / 2, height * (0.1 + 0.3));
     this.lblMoney.position.set(
       this.board.x + Diamond.WIDTH * 2.5,
-      this.board.y + Diamond.HEIGHT * 2.5
+      this.board.y + Diamond.HEIGHT * 2.5,
     );
 
     // 30% for diamond offer
@@ -256,9 +307,6 @@ export default class MainScreen extends Screen {
       if (!d) continue;
       const y2 = height * 0.85;
       d.position.set(x, y2);
-
-      // Put some coins underneath to show cost
-      // ...
     }
 
     if (this.selectedDiamond) {
@@ -267,6 +315,11 @@ export default class MainScreen extends Screen {
         this.selectedDiamond.y,
       );
     }
+
+    this.infoPanel.position.set(
+      this.diamonds[0].x,
+      this.diamonds[0].y - Diamond.HEIGHT - 45,
+    );
 
     // Objective panels
     const dy = height / this.objectivePanels.length;
