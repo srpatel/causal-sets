@@ -125,7 +125,7 @@ export default class ObjectivePanel extends PIXI.Container {
       let num = 0;
       this.highlightNodes.clear();
       for (const n of board.nodes) {
-        if (n.type == "gold") {
+        if (n.type != "normal") {
           this.highlightNodes.add(n);
           num += n.upConnections.length + n.downConnections.length;
         }

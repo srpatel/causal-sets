@@ -34,6 +34,7 @@ export default class MainScreen extends Screen {
   private objectivePanels: ObjectivePanel[] = [];
   private board: Board;
   private money: number = 20;
+  private edgeScore = 0;
   private score: number = 0;
   private visibleScore: number = 0;
   private visibleMoney: number = 20;
@@ -91,7 +92,7 @@ export default class MainScreen extends Screen {
         // Place this diamond ontop of the board in the right place.
         this.selectedDiamond.position.set(d.x, d.y);
         this.selectedDiamond.coords = [...d.coords];
-        const didAdd = this.board.addDiamond(this.selectedDiamond);
+        const { didAdd, numNewEdges } = this.board.addDiamond(this.selectedDiamond);
         if (!didAdd) {
           return;
         }
@@ -116,6 +117,7 @@ export default class MainScreen extends Screen {
         this.updateSelectedDiamond();
 
         // Update score
+        this.edgeScore += numNewEdges;
         this.updateScore();
 
         // Is the game over?
@@ -314,7 +316,7 @@ export default class MainScreen extends Screen {
       }
     }
 
-    this.score = score;
+    this.score = score + this.edgeScore;
   }
 
   private updateDisplay() {

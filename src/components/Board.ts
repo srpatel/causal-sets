@@ -17,6 +17,7 @@ export default class Board extends PIXI.Container {
   private nodesHolder: PIXI.Container = new PIXI.Container();
   private onClickBackgroundDiamond: (d: Diamond) => void;
   edgesHolder: PIXI.Graphics = new PIXI.Graphics();
+  previousEdges: [Node, Node][] = [];
   constructor(
     dimension: number,
     onClickBackgroundDiamond: (d: Diamond) => void,
@@ -123,7 +124,7 @@ export default class Board extends PIXI.Container {
         d.coords[0] == diamond.coords[0] &&
         d.coords[1] == diamond.coords[1]
       ) {
-        return false;
+        return {didAdd: false, numNewEdges: 0};
       }
     }
 
@@ -138,10 +139,10 @@ export default class Board extends PIXI.Container {
     }
 
     if (!andRecalculate) {
-      return true;
+      return {didAdd: true, numNewEdges: 0};
     }
 
-    this.drawEdges();
+    const numNewEdges = this.drawEdges();
 
     // Update scoring of nodes!
     for (const node of this.nodes) {
@@ -165,10 +166,12 @@ export default class Board extends PIXI.Container {
         // ??? part of a longest chain?
       }
     }
-    return true;
+    return {didAdd: true, numNewEdges};
   }
 
   drawEdges() {
+    const currentEdges: [Node, Node][] = [];
+    let numNew = 0;
     this.edgesHolder.clear();
     this.roots = [];
 
@@ -229,6 +232,17 @@ export default class Board extends PIXI.Container {
             .stroke();
           node.point.downConnections.push(potential.point);
           potential.point.upConnections.push(node.point);
+          let found = false;
+          for (const p of this.previousEdges) {
+            if (p[0] == node.point && p[1] == potential.point) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            numNew++;
+          }
+          currentEdges.push([node.point, potential.point]);
         }
       }
     }
@@ -237,5 +251,7 @@ export default class Board extends PIXI.Container {
     for (const r of roots) {
       this.roots.push(r.point);
     }
+    this.previousEdges = currentEdges;
+    return numNew;
   }
 }
