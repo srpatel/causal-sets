@@ -12,7 +12,7 @@ export type ScoringType =
 export default class Node extends PIXI.Container {
   downConnections: Node[] = [];
   upConnections: Node[] = [];
-  type: string;
+  type: "normal" | ScoringType;
   private past: Set<Node> = null;
   private future: Set<Node> = null;
   private g: PIXI.Graphics = new PIXI.Graphics();

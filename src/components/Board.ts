@@ -10,6 +10,7 @@ export default class Board extends PIXI.Container {
   private backgroundDiamonds: Diamond[] = [];
   private background: PIXI.Container = new PIXI.Container();
   private foregroundDiamonds: Diamond[] = [];
+  private potentialDiamond: Diamond = new Diamond({ isBackground: false });
   nodes: Node[] = [];
   roots: Node[] = [];
   private foreground: PIXI.Container = new PIXI.Container();
@@ -46,11 +47,17 @@ export default class Board extends PIXI.Container {
 
         // Hover over diamond to make opaque!
         d.on("pointerenter", () => {
-          d.alpha = 1;
+          d.alpha = 0.2;
+          this.potentialDiamond.position.set(d.x, d.y);
+          this.potentialDiamond.visible = true;
         });
         d.on("pointerleave", () => {
           d.alpha = 0.2;
+          this.potentialDiamond.position.set(d.x, d.y);
+          this.potentialDiamond.visible = false;
         });
+
+        // Place the 
 
         // Click to place the selected diamond here...
         d.on("pointerdown", () => {
@@ -58,6 +65,14 @@ export default class Board extends PIXI.Container {
         });
       }
     }
+
+    this.potentialDiamond.alpha = 0.5;
+    this.background.addChild(this.potentialDiamond);
+    this.potentialDiamond.visible = false;
+  }
+
+  setPotential(diamond: Diamond) {
+    this.potentialDiamond.copyNodes(diamond);
   }
 
   positionDiamond(diamond: Diamond) {
@@ -143,9 +158,9 @@ export default class Board extends PIXI.Container {
         const f = node.getFuture();
         node.scoring = 1 + p.size + f.size == this.nodes.length;
       } else if (node.type == "five") {
-        node.scoring = node.numConnections() >= 5;
+        node.scoring = node.numConnections() >= 4;
       } else if (node.type == "two") {
-        node.scoring = node.numConnections() <= 2;
+        node.scoring = node.numConnections() == 2;
       } else if (node.type == "chain") {
         // ??? part of a longest chain?
       }

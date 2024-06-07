@@ -355,9 +355,9 @@ export default class MainScreen extends Screen {
     if (st === "chain") {
       this.infoDesc.text = "Part of the longest chain";
     } else if (st === "five") {
-      this.infoDesc.text = "Five or more edges";
+      this.infoDesc.text = "Four or more edges";
     } else if (st === "two") {
-      this.infoDesc.text = "Two or fewer edges";
+      this.infoDesc.text = "Exactly two edges";
     } else if (st === "maximal") {
       this.infoDesc.text = "Maximal element";
     } else if (st === "minimal") {
@@ -376,6 +376,7 @@ export default class MainScreen extends Screen {
         this.selectedDiamond.y,
       );
     }
+    this.board.setPotential(this.selectedDiamond);
   }
 
   onSizeChanged() {

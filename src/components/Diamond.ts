@@ -1,9 +1,6 @@
 import * as PIXI from "pixi.js";
 import _ from "underscore";
-import { Actions } from "pixi-actions";
 
-import App from "@/App";
-import Screen from "@screens/Screen";
 import Node, { ScoringType } from "./Node";
 import Colour from "@/utils/Colour";
 
@@ -16,7 +13,7 @@ export default class Diamond extends PIXI.Container {
   private pointsHolder: PIXI.Container = new PIXI.Container();
   private shape: PIXI.Polygon;
   points: Node[] = [];
-  constructor(props: { isBackground: boolean, colour?: PIXI.ColorSource }) {
+  constructor(props: { isBackground: boolean; colour?: PIXI.ColorSource }) {
     super();
 
     // Put the Shape in the middle
@@ -34,13 +31,13 @@ export default class Diamond extends PIXI.Container {
     );
 
     const colour = props.colour ?? Colour.SPACETIME_BG;
-    
+
     if (props.isBackground) {
       this.area.poly(this.shape.points).fill(colour);
-        this.area.poly(this.shape.points).stroke({
-            color: 0,
-            width: 2,
-        });
+      this.area.poly(this.shape.points).stroke({
+        color: 0,
+        width: 2,
+      });
     } else {
       this.area.poly(this.shape.points).fill(colour);
     }
@@ -78,6 +75,20 @@ export default class Diamond extends PIXI.Container {
       this.pointsHolder.addChild(node);
       node.position.set(x, y);
       this.points.push(node);
+    }
+  }
+
+  copyNodes(source: Diamond) {
+    this.pointsHolder.removeChildren();
+    this.points.length = 0;
+
+    if (source) {
+      for (const node of source.points) {
+        const n = new Node(node.type);
+        n.position.set(node.x, node.y);
+        this.pointsHolder.addChild(n);
+        this.points.push(n);
+      }
     }
   }
 }
