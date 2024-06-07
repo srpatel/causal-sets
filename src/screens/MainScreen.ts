@@ -119,7 +119,7 @@ export default class MainScreen extends Screen {
         this.updateScore();
 
         // Is the game over?
-        if (this.money <= 0) {
+        if (this.money <= 0 || this.board.foregroundDiamonds.length == this.board.dimension * this.board.dimension) {
           this.selectedDiamond = null;
           this.updateSelectedDiamond();
           // 1. Airdrop blank tiles

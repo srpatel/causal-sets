@@ -9,7 +9,7 @@ export default class Board extends PIXI.Container {
   dimension: number;
   private backgroundDiamonds: Diamond[] = [];
   private background: PIXI.Container = new PIXI.Container();
-  private foregroundDiamonds: Diamond[] = [];
+  foregroundDiamonds: Diamond[] = [];
   private potentialDiamond: Diamond = new Diamond({ isBackground: false });
   nodes: Node[] = [];
   roots: Node[] = [];
