@@ -3,6 +3,7 @@ import * as PIXI from "pixi.js";
 import _ from "underscore";
 import Board from "./Board";
 import Node from "./Node";
+import Colour from "@/utils/Colour";
 
 export default class ObjectivePanel extends PIXI.Container {
   private background: PIXI.Sprite = PIXI.Sprite.from(PIXI.Texture.WHITE);
@@ -19,6 +20,7 @@ export default class ObjectivePanel extends PIXI.Container {
     this.background.anchor.set(0.5);
     this.background.width = 200;
     this.background.height = 150;
+    this.background.tint = Colour.SPACETIME_BG;
     this.addChild(this.background);
 
     let text = "";
@@ -33,6 +35,8 @@ export default class ObjectivePanel extends PIXI.Container {
       text = "+1 for each node in longest anti-chain (broken)";
     } else if (type == 4) {
       text = "+3 for each root node";
+    } else if (type == 5) {
+      text = "+2 for each diamond";
     }
 
     this.lblDesc = new PIXI.BitmapText({
@@ -45,7 +49,7 @@ export default class ObjectivePanel extends PIXI.Container {
     });
     this.lblDesc.anchor.set(0.5);
     this.lblDesc.position.set(0, 0);
-    this.lblDesc.tint = 0;
+    this.lblDesc.tint = Colour.DARK;
     this.addChild(this.lblDesc);
 
     this.lblPoints = new PIXI.BitmapText({
@@ -54,7 +58,7 @@ export default class ObjectivePanel extends PIXI.Container {
     });
     this.lblPoints.anchor.set(0.5, 1);
     this.lblPoints.position.set(0, 150 / 2 - 10);
-    this.lblPoints.tint = 0xcccccc;
+    this.lblPoints.tint = Colour.DARK;
     this.addChild(this.lblPoints);
 
     // fn to update/calc score?
@@ -182,6 +186,9 @@ export default class ObjectivePanel extends PIXI.Container {
         }
       }
       this.points = num * 3;
+    } else if (this.type == 5) {
+      // Diamonds
+      // Ask stav?
     }
 
     this.lblPoints.text = "" + this.points;
