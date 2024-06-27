@@ -4,6 +4,7 @@ import Diamond from "@/components/Diamond";
 import Node from "@/components/Node";
 import Colour from "@/utils/Colour";
 import { Actions } from "pixi-actions";
+import Edge from "./Edge";
 
 export default class Board extends PIXI.Container {
   dimension: number;
@@ -13,11 +14,12 @@ export default class Board extends PIXI.Container {
   private potentialDiamond: Diamond = new Diamond({ isBackground: false });
   nodes: Node[] = [];
   roots: Node[] = [];
+  edges: Edge[] = [];
   private foreground: PIXI.Container = new PIXI.Container();
   private nodesHolder: PIXI.Container = new PIXI.Container();
   private onClickBackgroundDiamond: (d: Diamond) => void;
   boardShapeGraphic = new PIXI.Graphics();
-  edgesHolder = new PIXI.Graphics();
+  edgesHolder = new PIXI.Container();
   coneHolder = new PIXI.Container();
   coneGraphics = new PIXI.Graphics();
   previousEdges: [Node, Node][] = [];
@@ -54,8 +56,6 @@ export default class Board extends PIXI.Container {
     this.boardShapeGraphic.poly(points).fill(0xffffff);
     this.addChild(this.boardShapeGraphic);
     this.coneHolder.mask = this.boardShapeGraphic;
-
-    this.edgesHolder.setStrokeStyle({ width: 3, color: Colour.DARK });
 
     // Draw a bunch of diamonds to make the board
     for (let i = 0; i < this.dimension; i++) {
@@ -201,8 +201,11 @@ export default class Board extends PIXI.Container {
   setConeForNode(n: Node) {
     if (!n) {
       this.coneHolder.visible = false;
-      for (const n of this.nodes) {
-        n.alpha = 1;
+      for (const o of this.nodes) {
+        o.alpha = 1;
+      }
+      for (const o of this.edges) {
+        o.alpha = 1;
       }
       return;
     }
@@ -219,11 +222,20 @@ export default class Board extends PIXI.Container {
     this.coneGraphics.poly(points2).fill();
 
     // All nodes are opaque iff they are in one of the cones
-    for (const node of this.nodes) {
-      node.alpha =
-        node == n ||
-        poly1.contains(node.x, node.y) ||
-        poly2.contains(node.x, node.y)
+    for (const o of this.nodes) {
+      o.alpha =
+        o == n || poly1.contains(o.x, o.y) || poly2.contains(o.x, o.y)
+          ? 1
+          : 0.2;
+    }
+    for (const o of this.edges) {
+      o.alpha =
+        (o.from == n ||
+          poly1.contains(o.from.x, o.from.y) ||
+          poly2.contains(o.from.x, o.from.y)) &&
+        (o.to == n ||
+          poly1.contains(o.to.x, o.to.y) ||
+          poly2.contains(o.to.x, o.to.y))
           ? 1
           : 0.2;
     }
@@ -232,8 +244,9 @@ export default class Board extends PIXI.Container {
   drawEdges() {
     const currentEdges: [Node, Node][] = [];
     let numNew = 0;
-    this.edgesHolder.clear();
+    this.edgesHolder.removeChildren();
     this.roots = [];
+    this.edges = [];
 
     // TODO : This could be made more efficient maybe... no need to recalculate old nodes?
 
@@ -286,10 +299,9 @@ export default class Board extends PIXI.Container {
           }
 
           // Draw the line!
-          this.edgesHolder
-            .moveTo(node.x, node.y)
-            .lineTo(potential.x, potential.y)
-            .stroke();
+          const edge = new Edge(node.point, potential.point);
+          this.edges.push(edge);
+          this.edgesHolder.addChild(edge);
           node.point.downConnections.push(potential.point);
           potential.point.upConnections.push(node.point);
           let found = false;
