@@ -26,7 +26,7 @@ export default class Node extends PIXI.Container {
     this.addChild(this.g);
 
     if (type == "normal") {
-      this.g.circle(0, 0, 4).fill(Colour.DARK);
+      this.g.circle(0, 0, 6).fill(Colour.DARK);
     } else {
       // ....
       this.sprite = PIXI.Sprite.from("node-" + type + "-incomplete.png");
@@ -40,7 +40,9 @@ export default class Node extends PIXI.Container {
   set scoring(b: boolean) {
     this._scoring = b;
     const suffix = b ? "" : "-incomplete";
-    this.sprite.texture = PIXI.Texture.from("node-" + this.type + suffix + ".png");
+    this.sprite.texture = PIXI.Texture.from(
+      "node-" + this.type + suffix + ".png",
+    );
   }
   get scoring() {
     return this._scoring;

@@ -32,7 +32,7 @@ export default class Board extends PIXI.Container {
     this.addChild(this.edgesHolder);
     this.addChild(this.nodesHolder);
 
-    this.edgesHolder.setStrokeStyle({ width: 2, color: Colour.DARK });
+    this.edgesHolder.setStrokeStyle({ width: 3, color: Colour.DARK });
 
     // Draw a bunch of diamonds to make the board
     for (let i = 0; i < this.dimension; i++) {
@@ -58,7 +58,7 @@ export default class Board extends PIXI.Container {
           this.potentialDiamond.visible = false;
         });
 
-        // Place the 
+        // Place the
 
         // Click to place the selected diamond here...
         d.on("pointerdown", () => {
@@ -92,10 +92,7 @@ export default class Board extends PIXI.Container {
       for (let j = 0; j < this.dimension; j++) {
         let found = false;
         for (const d of this.foregroundDiamonds) {
-          if (
-            d.coords[0] == i &&
-            d.coords[1] == j
-          ) {
+          if (d.coords[0] == i && d.coords[1] == j) {
             found = true;
             break;
           }
@@ -111,7 +108,7 @@ export default class Board extends PIXI.Container {
             Actions.parallel(
               Actions.fadeIn(d, 0.4),
               Actions.moveTo(d, d.x, d.y + dropDistance, 0.4),
-            )
+            ),
           ).play();
         }
       }
@@ -124,7 +121,7 @@ export default class Board extends PIXI.Container {
         d.coords[0] == diamond.coords[0] &&
         d.coords[1] == diamond.coords[1]
       ) {
-        return {didAdd: false, numNewEdges: 0};
+        return { didAdd: false, numNewEdges: 0 };
       }
     }
 
@@ -139,7 +136,7 @@ export default class Board extends PIXI.Container {
     }
 
     if (!andRecalculate) {
-      return {didAdd: true, numNewEdges: 0};
+      return { didAdd: true, numNewEdges: 0 };
     }
 
     const numNewEdges = this.drawEdges();
@@ -166,7 +163,7 @@ export default class Board extends PIXI.Container {
         // ??? part of a longest chain?
       }
     }
-    return {didAdd: true, numNewEdges};
+    return { didAdd: true, numNewEdges };
   }
 
   drawEdges() {

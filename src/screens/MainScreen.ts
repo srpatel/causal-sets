@@ -52,7 +52,6 @@ export default class MainScreen extends Screen {
     super();
 
     this.ticker = (tick) => {
-
       this.visibleMoney -= (this.visibleMoney - this.money) / 5;
       this.visibleScore -= (this.visibleScore - this.score) / 5;
 
@@ -98,7 +97,9 @@ export default class MainScreen extends Screen {
         // Place this diamond ontop of the board in the right place.
         this.selectedDiamond.position.set(d.x, d.y);
         this.selectedDiamond.coords = [...d.coords];
-        const { didAdd, numNewEdges } = this.board.addDiamond(this.selectedDiamond);
+        const { didAdd, numNewEdges } = this.board.addDiamond(
+          this.selectedDiamond,
+        );
         if (!didAdd) {
           return;
         }
@@ -127,7 +128,11 @@ export default class MainScreen extends Screen {
         this.updateScore();
 
         // Is the game over?
-        if (this.money <= 0 || this.board.foregroundDiamonds.length == this.board.dimension * this.board.dimension) {
+        if (
+          this.money <= 0 ||
+          this.board.foregroundDiamonds.length ==
+            this.board.dimension * this.board.dimension
+        ) {
           this.selectedDiamond = null;
           this.updateSelectedDiamond();
           // 1. Airdrop blank tiles
@@ -301,7 +306,7 @@ export default class MainScreen extends Screen {
           m.alpha = 0;
           Actions.fadeIn(m, 0.2).play();
           App.instance.setScreen(m);
-        })
+        }),
       ).play();
     });
     const b2 = new Button("btnshare", () => {
@@ -372,7 +377,11 @@ export default class MainScreen extends Screen {
       }
     }
 
-    this.score = score + this.edgeScore + this.leftObjectiveScore + this.rightObjectiveScore;
+    this.score =
+      score +
+      this.edgeScore +
+      this.leftObjectiveScore +
+      this.rightObjectiveScore;
   }
 
   private updateDisplay() {
@@ -468,7 +477,10 @@ export default class MainScreen extends Screen {
       this.board.x + Diamond.WIDTH * 2.2,
       this.board.y - Diamond.HEIGHT * 2.2,
     );
-    this.objectivePanels[0].position.set(this.board.x - Diamond.WIDTH * 3, this.board.y - Diamond.HEIGHT * 3);
+    this.objectivePanels[0].position.set(
+      this.board.x - Diamond.WIDTH * 3,
+      this.board.y - Diamond.HEIGHT * 3,
+    );
     //this.objectivePanels[1].position.set(this.board.x + Diamond.WIDTH * 3, this.board.y - Diamond.HEIGHT * 3);
 
     // 30% for diamond offer
@@ -484,7 +496,7 @@ export default class MainScreen extends Screen {
       const y2 = height * 0.85;
       d.position.set(x, y2);
     }
-    this.sharePanel.position.set(width/2, height * 0.85);
+    this.sharePanel.position.set(width / 2, height * 0.85);
 
     if (this.selectedDiamond) {
       this.highlighter.position.set(
@@ -498,7 +510,7 @@ export default class MainScreen extends Screen {
       this.diamonds[0].y - Diamond.HEIGHT - 45,
     );
   }
-  
+
   onAddedToStage(stage: PIXI.Container<PIXI.ContainerChild>): void {
     PIXI.Ticker.shared.add(this.ticker);
   }
