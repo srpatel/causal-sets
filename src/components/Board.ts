@@ -213,11 +213,29 @@ export default class Board extends PIXI.Container {
     this.coneGraphics.clear();
 
     // Draw the cone from this node!
-    const d = 1000;
-    const points1 = [n.x, n.y, n.x + d, n.y - d, n.x - d, n.y - d, n.x, n.y];
+    const d = 2000;
+    const points1 = [
+      n.x,
+      n.y,
+      n.x + d,
+      n.y - d + 1,
+      n.x - d,
+      n.y - d + 1,
+      n.x,
+      n.y,
+    ];
     const poly1 = new PIXI.Polygon(points1);
     this.coneGraphics.poly(points1).fill();
-    const points2 = [n.x, n.y, n.x + d, n.y + d, n.x - d, n.y + d, n.x, n.y];
+    const points2 = [
+      n.x,
+      n.y,
+      n.x + d,
+      n.y + d - 1,
+      n.x - d,
+      n.y + d - 1,
+      n.x,
+      n.y,
+    ];
     const poly2 = new PIXI.Polygon(points2);
     this.coneGraphics.poly(points2).fill();
 
@@ -272,8 +290,8 @@ export default class Board extends PIXI.Container {
     // prettier-ignore
     const cone = new PIXI.Polygon(
       0, 0,
-      2000, 2000,
-      -2000, 2000,
+      2000, 2000 - 1,
+      -2000, 2000 - 1,
       0, 0,
     );
     for (let i = 0; i < sortedPoints.length; i++) {
