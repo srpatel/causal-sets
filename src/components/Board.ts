@@ -16,7 +16,10 @@ export default class Board extends PIXI.Container {
   private foreground: PIXI.Container = new PIXI.Container();
   private nodesHolder: PIXI.Container = new PIXI.Container();
   private onClickBackgroundDiamond: (d: Diamond) => void;
-  edgesHolder: PIXI.Graphics = new PIXI.Graphics();
+  boardShapeGraphic = new PIXI.Graphics();
+  edgesHolder = new PIXI.Graphics();
+  coneHolder = new PIXI.Container();
+  coneGraphics = new PIXI.Graphics();
   previousEdges: [Node, Node][] = [];
   constructor(
     dimension: number,
@@ -31,6 +34,26 @@ export default class Board extends PIXI.Container {
     this.addChild(this.foreground);
     this.addChild(this.edgesHolder);
     this.addChild(this.nodesHolder);
+
+    this.coneHolder.addChild(this.coneGraphics);
+    this.coneGraphics.setFillStyle({ color: 0xffffff, alpha: 0.4 });
+    this.addChild(this.coneHolder);
+
+    const points = [
+      -Diamond.WIDTH * this.dimension,
+      0,
+      0,
+      -Diamond.HEIGHT * this.dimension,
+      Diamond.WIDTH * this.dimension,
+      0,
+      0,
+      Diamond.HEIGHT * this.dimension,
+      -Diamond.WIDTH * this.dimension,
+      0,
+    ];
+    this.boardShapeGraphic.poly(points).fill(0xffffff);
+    this.addChild(this.boardShapeGraphic);
+    this.coneHolder.mask = this.boardShapeGraphic;
 
     this.edgesHolder.setStrokeStyle({ width: 3, color: Colour.DARK });
 
@@ -133,6 +156,15 @@ export default class Board extends PIXI.Container {
       p.y += diamond.y;
       this.nodes.push(p);
       this.nodesHolder.addChild(p);
+
+      p.cursor = "pointer";
+      p.eventMode = "static";
+      p.on("pointerenter", () => {
+        this.setConeForNode(p);
+      });
+      p.on("pointerleave", () => {
+        this.setConeForNode(null);
+      });
     }
 
     if (!andRecalculate) {
@@ -164,6 +196,37 @@ export default class Board extends PIXI.Container {
       }
     }
     return { didAdd: true, numNewEdges };
+  }
+
+  setConeForNode(n: Node) {
+    if (!n) {
+      this.coneHolder.visible = false;
+      for (const n of this.nodes) {
+        n.alpha = 1;
+      }
+      return;
+    }
+    this.coneHolder.visible = true;
+    this.coneGraphics.clear();
+
+    // Draw the cone from this node!
+    const d = 500;
+    const points1 = [n.x, n.y, n.x + d, n.y - d, n.x - d, n.y - d, n.x, n.y];
+    const poly1 = new PIXI.Polygon(points1);
+    this.coneGraphics.poly(points1).fill();
+    const points2 = [n.x, n.y, n.x + d, n.y + d, n.x - d, n.y + d, n.x, n.y];
+    const poly2 = new PIXI.Polygon(points2);
+    this.coneGraphics.poly(points2).fill();
+
+    // All nodes are opaque iff they are in one of the cones
+    for (const node of this.nodes) {
+      node.alpha =
+        node == n ||
+        poly1.contains(node.x, node.y) ||
+        poly2.contains(node.x, node.y)
+          ? 1
+          : 0.2;
+    }
   }
 
   drawEdges() {
