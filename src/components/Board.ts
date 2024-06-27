@@ -213,7 +213,7 @@ export default class Board extends PIXI.Container {
     this.coneGraphics.clear();
 
     // Draw the cone from this node!
-    const d = 500;
+    const d = 1000;
     const points1 = [n.x, n.y, n.x + d, n.y - d, n.x - d, n.y - d, n.x, n.y];
     const poly1 = new PIXI.Polygon(points1);
     this.coneGraphics.poly(points1).fill();
