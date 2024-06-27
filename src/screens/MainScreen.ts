@@ -186,13 +186,20 @@ export default class MainScreen extends Screen {
         for (const n of this.board.nodes) {
           n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
         }
-        this.board.edgesHolder.alpha = 0.2;
+        for (const e of this.board.edges) {
+          e.alpha =
+            o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to)
+              ? 1
+              : 0.2;
+        }
       });
       o.on("pointerleave", () => {
         for (const n of this.board.nodes) {
           n.alpha = 1;
         }
-        this.board.edgesHolder.alpha = 1;
+        for (const e of this.board.edges) {
+          e.alpha = 1;
+        }
       });
     }
 
