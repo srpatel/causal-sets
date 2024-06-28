@@ -35,6 +35,8 @@ export default class Node extends PIXI.Container {
       this.sprite.scale.set(0.2);
       this.addChild(this.sprite);
     }
+
+    this.hitArea = new PIXI.Circle(0, 0, 12);
   }
 
   set scoring(b: boolean) {
