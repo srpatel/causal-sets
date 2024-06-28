@@ -11,14 +11,13 @@ import Colour from "@/utils/Colour";
 import { Actions } from "pixi-actions";
 import Button from "@/components/Button";
 import App from "@/App";
+import ImmediatePanel from "@/components/ImmediatePanel";
 export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null];
   private infoPanel = new PIXI.Container();
   private infoDesc: PIXI.BitmapText;
   private moneyTriangle = new PIXI.Container();
   private scoreTriangle = new PIXI.Container();
-  private leftObjectiveTriangle = new PIXI.Container();
-  private rightObjectiveTriangle = new PIXI.Container();
   private sharePanel = new PIXI.Container();
   private diamondCosts: PIXI.Sprite[] = [
     PIXI.Sprite.from("coins-3.png"),
@@ -33,15 +32,12 @@ export default class MainScreen extends Screen {
   private deck1: Diamond[] = [];
   private deck2: Diamond[] = [];
   private deck3: Diamond[] = [];
-  private objectivePanels: ObjectivePanel[] = [];
+  private objectivePanel: ObjectivePanel;
+  private immediatePanel: ImmediatePanel;
   private board: Board;
   private money: number = 20;
   private edgeScore = 0;
   private score: number = 0;
-  private lblLeftObjectiveScore: PIXI.BitmapText;
-  private leftObjectiveScore: number = 0;
-  private lblRightObjectiveScore: PIXI.BitmapText;
-  private rightObjectiveScore: number = 0;
   private visibleScore: number = 0;
   private visibleMoney: number = 20;
   private lblScore: PIXI.BitmapText;
@@ -124,7 +120,8 @@ export default class MainScreen extends Screen {
         this.updateSelectedDiamond();
 
         // Update score
-        this.edgeScore += numNewEdges;
+        //this.edgeScore += numNewEdges;
+        this.immediatePanel.madeConnections(numNewEdges);
         this.updateScore();
 
         // Is the game over?
@@ -173,42 +170,43 @@ export default class MainScreen extends Screen {
     this.addChild(this.infoPanel);
 
     // Add one random end-game scoring panel
-    this.objectivePanels.push(new ObjectivePanel(Math.random() < 0.5 ? 0 : 6));
-    //this.objectivePanels.push(new ObjectivePanel(5));
-    for (const o of this.objectivePanels) {
-      o.calculate(this.board);
-      this.addChild(o);
+    const o = new ObjectivePanel(Math.random() < 0.5 ? 0 : 6);
+    this.objectivePanel = o;
+    o.calculate(this.board);
+    this.addChild(o);
 
-      o.eventMode = "static";
-      o.cursor = "pointer";
-      // Hover over an objective panel to see the highlighted nodes
-      o.on("pointerenter", () => {
-        for (const n of this.board.nodes) {
-          n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
+    this.immediatePanel = new ImmediatePanel();
+    this.addChild(this.immediatePanel);
+
+    o.eventMode = "static";
+    o.cursor = "pointer";
+    // Hover over an objective panel to see the highlighted nodes
+    o.on("pointerenter", () => {
+      for (const n of this.board.nodes) {
+        n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
+      }
+      for (const e of this.board.edges) {
+        if (o.type == 6) {
+          e.alpha =
+            o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to)
+              ? 1
+              : 0.2;
+        } else {
+          e.alpha =
+            o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to)
+              ? 1
+              : 0.2;
         }
-        for (const e of this.board.edges) {
-          if (o.type == 6) {
-            e.alpha =
-              o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to)
-                ? 1
-                : 0.2;
-          } else {
-            e.alpha =
-              o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to)
-                ? 1
-                : 0.2;
-          }
-        }
-      });
-      o.on("pointerleave", () => {
-        for (const n of this.board.nodes) {
-          n.alpha = 1;
-        }
-        for (const e of this.board.edges) {
-          e.alpha = 1;
-        }
-      });
-    }
+      }
+    });
+    o.on("pointerleave", () => {
+      for (const n of this.board.nodes) {
+        n.alpha = 1;
+      }
+      for (const e of this.board.edges) {
+        e.alpha = 1;
+      }
+    });
 
     {
       const t = PIXI.Sprite.from("triangle.png");
@@ -241,39 +239,6 @@ export default class MainScreen extends Screen {
       label.tint = Colour.DARK;
       this.scoreTriangle.addChild(label);
     }
-    {
-      const t = PIXI.Sprite.from("bigtriangle.png");
-      this.leftObjectiveTriangle.addChild(t);
-      t.scale.set(-1, 1);
-      t.anchor.set(0.5);
-      //this.addChild(this.leftObjectiveTriangle);
-
-      const label = new PIXI.BitmapText({
-        text: "Longest chain\n1pt per node",
-        style: Font.makeFontOptions("small"),
-      });
-      label.anchor.set(0.5);
-      label.position.set(-30, -125);
-      label.tint = Colour.DARK;
-      this.leftObjectiveTriangle.addChild(label);
-    }
-    {
-      const t = PIXI.Sprite.from("bigtriangle.png");
-      this.rightObjectiveTriangle.addChild(t);
-      t.scale.set(1, 1);
-      t.anchor.set(0.5);
-      //this.addChild(this.rightObjectiveTriangle);
-
-      const label = new PIXI.BitmapText({
-        text: "Diamonds\n2pt per diamond",
-        style: Font.makeFontOptions("small"),
-      });
-      label.anchor.set(0.5);
-      label.position.set(30, -125);
-      label.tint = Colour.DARK;
-      this.rightObjectiveTriangle.addChild(label);
-    }
-
     // Update scoring recalculates all of them.
     this.lblScore = new PIXI.BitmapText({
       text: "0",
@@ -292,24 +257,6 @@ export default class MainScreen extends Screen {
     this.lblMoney.position.set(-20, 20);
     this.lblMoney.tint = Colour.DARK;
     this.moneyTriangle.addChild(this.lblMoney);
-
-    this.lblLeftObjectiveScore = new PIXI.BitmapText({
-      text: "" + this.leftObjectiveScore,
-      style: Font.makeFontOptions("medium"),
-    });
-    this.lblLeftObjectiveScore.anchor.set(0.5);
-    this.lblLeftObjectiveScore.position.set(-50, -45);
-    this.lblLeftObjectiveScore.tint = Colour.DARK;
-    this.leftObjectiveTriangle.addChild(this.lblLeftObjectiveScore);
-
-    this.lblRightObjectiveScore = new PIXI.BitmapText({
-      text: "" + this.rightObjectiveScore,
-      style: Font.makeFontOptions("medium"),
-    });
-    this.lblRightObjectiveScore.anchor.set(0.5);
-    this.lblRightObjectiveScore.position.set(45, -45);
-    this.lblRightObjectiveScore.tint = Colour.DARK;
-    this.rightObjectiveTriangle.addChild(this.lblRightObjectiveScore);
 
     // Buttons
     const b1 = new Button("btnagain", () => {
@@ -376,13 +323,7 @@ export default class MainScreen extends Screen {
     let score = 0;
 
     // Scoring objectives
-    for (const o of this.objectivePanels) {
-      o.calculate(this.board);
-    }
-    this.leftObjectiveScore = this.objectivePanels[0].points;
-    //this.rightObjectiveScore = this.objectivePanels[1].points;
-    this.lblLeftObjectiveScore.text = this.leftObjectiveScore + "";
-    //this.lblRightObjectiveScore.text = this.rightObjectiveScore + "";
+    this.objectivePanel.calculate(this.board);
 
     // Scoring nodes
     for (const n of this.board.nodes) {
@@ -394,8 +335,8 @@ export default class MainScreen extends Screen {
     this.score =
       score +
       this.edgeScore +
-      this.leftObjectiveScore +
-      this.rightObjectiveScore;
+      this.objectivePanel.points +
+      this.immediatePanel.points;
   }
 
   private updateDisplay() {
@@ -483,19 +424,14 @@ export default class MainScreen extends Screen {
       this.board.x + Diamond.WIDTH * 2.5,
       this.board.y + Diamond.HEIGHT * 2.5,
     );
-    this.leftObjectiveTriangle.position.set(
-      this.board.x - Diamond.WIDTH * 2.2,
-      this.board.y - Diamond.HEIGHT * 2.2,
-    );
-    this.rightObjectiveTriangle.position.set(
-      this.board.x + Diamond.WIDTH * 2.2,
-      this.board.y - Diamond.HEIGHT * 2.2,
-    );
-    this.objectivePanels[0].position.set(
+    this.objectivePanel.position.set(
       this.board.x - Diamond.WIDTH * 3,
       this.board.y - Diamond.HEIGHT * 3,
     );
-    //this.objectivePanels[1].position.set(this.board.x + Diamond.WIDTH * 3, this.board.y - Diamond.HEIGHT * 3);
+    this.immediatePanel.position.set(
+      this.board.x + Diamond.WIDTH * 3,
+      this.board.y - Diamond.HEIGHT * 3,
+    );
 
     // 30% for diamond offer
     for (let i = 0; i < this.diamonds.length; i++) {
