@@ -68,7 +68,7 @@ export default class ImmediatePanel extends PIXI.Container {
   }
 
   madeConnections(num: number) {
-    if (this.target == num || (this.target > num && this.target == 5)) {
+    if (this.target == num || (this.target <= num && this.target == 5)) {
       this.target = this.randomTarget();
       this.updateText();
       this.points += 5;
