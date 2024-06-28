@@ -4,6 +4,7 @@ import _ from "underscore";
 import Board from "./Board";
 import Node from "./Node";
 import Colour from "@/utils/Colour";
+import { Actions } from "pixi-actions";
 
 export default class ImmediatePanel extends PIXI.Container {
   private background: PIXI.Sprite;
@@ -50,11 +51,11 @@ export default class ImmediatePanel extends PIXI.Container {
   updateText() {
     let text = "";
     if (this.target == 1) {
-      text = `${this.target} new edge with a single tile:\n5 points`;
+      text = `${this.target} new edge with a single tile:\n+5`;
     } else if (this.target == 5) {
-      text = `${this.target}+ new edges with a single tile:\n5 points`;
+      text = `${this.target}+ new edges with a single tile:\n+5`;
     } else {
-      text = `${this.target} new edges with a single tile:\n5 points`;
+      text = `${this.target} new edges with a single tile:\n+5`;
     }
     this.lblDesc.text = text;
   }
@@ -72,6 +73,10 @@ export default class ImmediatePanel extends PIXI.Container {
       this.updateText();
       this.points += 5;
       this.lblPoints.text = "" + this.points;
+      Actions.sequence(
+        Actions.tintTo(this.background, 0x06aa22, 0.2),
+        Actions.tintTo(this.background, Colour.SPACETIME_BG, 0.2),
+      ).play();
     }
   }
 }
