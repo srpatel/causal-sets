@@ -6,10 +6,10 @@ import Node from "./Node";
 import Colour from "@/utils/Colour";
 
 export default class ObjectivePanel extends PIXI.Container {
-  private background: PIXI.Sprite = PIXI.Sprite.from(PIXI.Texture.WHITE);
+  private background: PIXI.Sprite;
   private lblDesc: PIXI.BitmapText;
   private lblPoints: PIXI.BitmapText;
-  private type: number;
+  type: number;
   highlightNodes: Set<Node> = new Set<Node>();
   points: number = 0;
   constructor(type: number) {
@@ -17,9 +17,8 @@ export default class ObjectivePanel extends PIXI.Container {
 
     this.type = type;
 
+    this.background = PIXI.Sprite.from("circle.png");
     this.background.anchor.set(0.5);
-    this.background.width = 200;
-    this.background.height = 150;
     this.background.tint = Colour.SPACETIME_BG;
     this.addChild(this.background);
 
@@ -37,6 +36,8 @@ export default class ObjectivePanel extends PIXI.Container {
       text = "+3 for each root node";
     } else if (type == 5) {
       text = "+2 for each diamond";
+    } else if (type == 6) {
+      text = "+1 for node with most connections";
     }
 
     this.lblDesc = new PIXI.BitmapText({
@@ -48,13 +49,13 @@ export default class ObjectivePanel extends PIXI.Container {
       },
     });
     this.lblDesc.anchor.set(0.5);
-    this.lblDesc.position.set(0, 0);
+    this.lblDesc.position.set(0, -30);
     this.lblDesc.tint = Colour.DARK;
     this.addChild(this.lblDesc);
 
     this.lblPoints = new PIXI.BitmapText({
       text: "",
-      style: Font.makeFontOptions("tiny"),
+      style: Font.makeFontOptions("medium"),
     });
     this.lblPoints.anchor.set(0.5, 1);
     this.lblPoints.position.set(0, 150 / 2 - 10);
@@ -181,14 +182,28 @@ export default class ObjectivePanel extends PIXI.Container {
       this.highlightNodes.clear();
       for (const n of board.nodes) {
         if (n.upConnections.length == 0) {
-            num += 1;
-            this.highlightNodes.add(n);
+          num += 1;
+          this.highlightNodes.add(n);
         }
       }
       this.points = num * 3;
     } else if (this.type == 5) {
       // Diamonds
       // Ask stav?
+    } else if (this.type == 6) {
+      // node with most connections
+      let numConnections = 0;
+      let node = null;
+      for (const n of board.nodes) {
+        const num = n.upConnections.length + n.downConnections.length;
+        if (num > numConnections) {
+          numConnections = num;
+          node = n;
+        }
+      }
+      this.highlightNodes.clear();
+      this.highlightNodes.add(node);
+      this.points = numConnections;
     }
 
     this.lblPoints.text = "" + this.points;

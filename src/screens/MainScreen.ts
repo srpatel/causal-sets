@@ -172,8 +172,8 @@ export default class MainScreen extends Screen {
 
     this.addChild(this.infoPanel);
 
-    // Add three/four scoring panels
-    this.objectivePanels.push(new ObjectivePanel(0));
+    // Add one random end-game scoring panel
+    this.objectivePanels.push(new ObjectivePanel(Math.random() < 0.5 ? 0 : 6));
     //this.objectivePanels.push(new ObjectivePanel(5));
     for (const o of this.objectivePanels) {
       o.calculate(this.board);
@@ -187,10 +187,17 @@ export default class MainScreen extends Screen {
           n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
         }
         for (const e of this.board.edges) {
-          e.alpha =
-            o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to)
-              ? 1
-              : 0.2;
+          if (o.type == 6) {
+            e.alpha =
+              o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to)
+                ? 1
+                : 0.2;
+          } else {
+            e.alpha =
+              o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to)
+                ? 1
+                : 0.2;
+          }
         }
       });
       o.on("pointerleave", () => {
