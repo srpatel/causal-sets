@@ -14,6 +14,7 @@ import { Actions } from "pixi-actions";
 import Button from "@/components/Button";
 import App from "@/App";
 import ImmediatePanel from "@/components/ImmediatePanel";
+import Modal from "./Modal";
 export default class MainScreen extends Screen {
   private diamonds: Diamond[] = [null, null, null];
   private infoPanel = new PIXI.Container();
@@ -45,6 +46,8 @@ export default class MainScreen extends Screen {
   private lblScore: PIXI.BitmapText;
   private lblMoney: PIXI.BitmapText;
   private lblTitle: PIXI.BitmapText;
+  private sprRules: PIXI.Sprite;
+  private sprAbout: PIXI.Sprite;
   private ticker: PIXI.TickerCallback<void>;
   constructor() {
     super();
@@ -59,13 +62,33 @@ export default class MainScreen extends Screen {
     };
 
     this.lblTitle = new PIXI.BitmapText({
-      text: "Causal Sets Game",
+      text: "CAUSETS",
       style: Font.makeFontOptions("large"),
     });
     this.lblTitle.anchor.set(0.5);
     this.lblTitle.position.set(0, 0);
     this.lblTitle.tint = Colour.SPACETIME_BG;
     this.addChild(this.lblTitle);
+
+    // Buttons
+    this.sprRules = PIXI.Sprite.from("book.png");
+    this.sprRules.anchor.set(0.5);
+    this.sprRules.tint = Colour.SPACETIME_BG;
+    this.sprRules.eventMode = "static";
+    this.sprRules.cursor = "pointer";
+    this.sprRules.on("pointerdown", () => {
+      App.instance.addModal(new Modal());
+    });
+    this.addChild(this.sprRules);
+    this.sprAbout = PIXI.Sprite.from("science.png");
+    this.sprAbout.anchor.set(0.5);
+    this.sprAbout.tint = Colour.SPACETIME_BG;
+    this.sprAbout.eventMode = "static";
+    this.sprAbout.cursor = "pointer";
+    this.sprAbout.on("pointerdown", () => {
+      App.instance.addModal(new Modal());
+    });
+    this.addChild(this.sprAbout);
 
     const panel = PIXI.Sprite.from("infopanel.png");
     panel.anchor.set(0.5);
@@ -426,6 +449,8 @@ export default class MainScreen extends Screen {
 
     // 10% for title bar
     this.lblTitle.position.set(width / 2, height * 0.05);
+    this.sprAbout.position.set(width - 100, this.lblTitle.y + 5);
+    this.sprRules.position.set(100, this.lblTitle.y + 5);
 
     // 60% for grid
     this.board.scale.set(tileScale);

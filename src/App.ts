@@ -15,6 +15,8 @@ export default class App extends PIXI.Application {
   private screenWidth: number;
   private screenHeight: number;
 
+  private modal: Screen = null;
+
   constructor() {
     super();
 
@@ -49,6 +51,27 @@ export default class App extends PIXI.Application {
     this.currentScreen.setSize(this.screenWidth, this.screenHeight);
   }
 
+  addModal(modal: Screen) {
+    this.modal = modal;
+
+    this.stage.addChild(this.modal);
+    this.modal.onAddedToStage(this.stage);
+
+    this.modal.alpha = 0;
+    Actions.fadeIn(this.modal, 0.2).play();
+
+    this.modal.position.set(0, 0);
+    this.modal.setSize(this.screenWidth, this.screenHeight);
+  }
+
+  popModal() {
+    if (!this.modal) return;
+
+    this.modal.eventMode = "none";
+    Actions.fadeOutAndRemove(this.modal, 0.2).play();
+    this.modal = null;
+  }
+
   setSize(width: number, height: number) {
     this.renderer.resize(width, height);
 
@@ -67,6 +90,11 @@ export default class App extends PIXI.Application {
     if (this.currentScreen) {
       this.currentScreen.position.set(0, 0);
       this.currentScreen.setSize(this.screenWidth, this.screenHeight);
+    }
+
+    if (this.modal) {
+      this.modal.position.set(0, 0);
+      this.modal.setSize(this.screenWidth, this.screenHeight);
     }
   }
 }
