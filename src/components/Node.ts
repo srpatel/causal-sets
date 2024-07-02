@@ -12,9 +12,13 @@ export type ScoringType =
 export default class Node extends PIXI.Container {
   downConnections: Node[] = [];
   upConnections: Node[] = [];
+  leftConnections: Node[] = [];
+  rightConnections: Node[] = [];
   type: "normal" | ScoringType;
   private past: Set<Node> = null;
   private future: Set<Node> = null;
+  private left: Set<Node> = null;
+  private right: Set<Node> = null;
   private g: PIXI.Graphics = new PIXI.Graphics();
   private sprite: PIXI.Sprite = null;
   private _scoring: boolean = false;
@@ -58,11 +62,23 @@ export default class Node extends PIXI.Container {
     return false;
   }
 
+  isRight(node: Node): boolean {
+    if (node == this) return true;
+    for (const p of this.rightConnections) {
+      if (p.isRight(node)) return true;
+    }
+    return false;
+  }
+
   reset() {
     this.past = null;
     this.future = null;
     this.downConnections = [];
     this.upConnections = [];
+    this.left = null;
+    this.right = null;
+    this.leftConnections = [];
+    this.rightConnections = [];
   }
 
   numConnections() {
@@ -93,5 +109,31 @@ export default class Node extends PIXI.Container {
     }
     this.future = future;
     return future;
+  }
+
+  getLeft(): Set<Node> {
+    if (this.left) return this.left;
+    let left = new Set<Node>();
+    for (const p of this.leftConnections) {
+      left.add(p);
+      for (const pp of p.getLeft()) {
+        left.add(pp);
+      }
+    }
+    this.left = left;
+    return left;
+  }
+
+  getRight(): Set<Node> {
+    if (this.right) return this.right;
+    let right = new Set<Node>();
+    for (const p of this.rightConnections) {
+      right.add(p);
+      for (const pp of p.getRight()) {
+        right.add(pp);
+      }
+    }
+    this.right = right;
+    return right;
   }
 }

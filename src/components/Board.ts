@@ -14,12 +14,15 @@ export default class Board extends PIXI.Container {
   private potentialDiamond: Diamond = new Diamond({ isBackground: false });
   nodes: Node[] = [];
   roots: Node[] = [];
+  antiroots: Node[] = [];
   edges: Edge[] = [];
+  antiedges: Edge[] = [];
   private foreground: PIXI.Container = new PIXI.Container();
   private nodesHolder: PIXI.Container = new PIXI.Container();
   private onClickBackgroundDiamond: (d: Diamond) => void;
   boardShapeGraphic = new PIXI.Graphics();
   edgesHolder = new PIXI.Container();
+  antiedgesHolder = new PIXI.Container();
   coneHolder = new PIXI.Container();
   coneGraphics = new PIXI.Graphics();
   previousEdges: [Node, Node][] = [];
@@ -35,6 +38,7 @@ export default class Board extends PIXI.Container {
     this.addChild(this.background);
     this.addChild(this.foreground);
     this.addChild(this.edgesHolder);
+    this.addChild(this.antiedgesHolder);
     this.addChild(this.nodesHolder);
 
     this.coneHolder.addChild(this.coneGraphics);
@@ -263,8 +267,11 @@ export default class Board extends PIXI.Container {
     const currentEdges: [Node, Node][] = [];
     let numNew = 0;
     this.edgesHolder.removeChildren();
+    this.antiedgesHolder.removeChildren();
     this.roots = [];
+    this.antiroots = [];
     this.edges = [];
+    this.antiedges = [];
 
     // TODO : This could be made more efficient maybe... no need to recalculate old nodes?
 
@@ -282,57 +289,94 @@ export default class Board extends PIXI.Container {
         //p.setColour(0x7ba0d9);
       }
     }
-    // topological sort
-    const sortedPoints = _.sortBy(points, (n) => -n.y);
     const roots = [...points];
+    const antiroots = [...points];
 
-    // Start with the lowest points, and work upwards
-    // prettier-ignore
-    const cone = new PIXI.Polygon(
-      0, 0,
-      2000, 2000 - 1,
-      -2000, 2000 - 1,
-      0, 0,
-    );
-    for (let i = 0; i < sortedPoints.length; i++) {
-      const node = sortedPoints[i];
-      // Draw the light cone for this point...
-      for (let j = i - 1; j >= 0; j--) {
-        // Find all points which fall within (can only be elements with lower index)
-        const potential = sortedPoints[j];
-        const isTimelike = cone.contains(
-          potential.x - node.x,
-          potential.y - node.y,
-        );
-        if (isTimelike) {
-          // Are they already connected?
-          if (node.point.isPast(potential.point)) {
-            continue;
-          }
+    for (const direction of ["vertical", "horizontal"]) {
+      // topological sort
+      const sortedPoints = _.sortBy(points, (n) => {
+        return direction == "vertical" ? -n.y : -n.x;
+      });
 
-          // This is no longer a root
-          const index = roots.indexOf(potential);
-          if (index >= 0) {
-            roots.splice(index, 1);
-          }
+      // Start with the lowest points, and work upwards
+      // prettier-ignore
+      const cone = direction == "vertical" ? new PIXI.Polygon(
+        0, 0,
+        2000, 2000 - 1,
+        -2000, 2000 - 1,
+        0, 0,
+      ) : new PIXI.Polygon(
+        0, 0,
+        2000 - 1, -2000,
+        2000 - 1, 2000,
+        0, 0,
+      );
+      for (let i = 0; i < sortedPoints.length; i++) {
+        const node = sortedPoints[i];
+        // Draw the light cone for this point...
+        for (let j = i - 1; j >= 0; j--) {
+          // Find all points which fall within (can only be elements with lower index)
+          const potential = sortedPoints[j];
+          const isTimelike = cone.contains(
+            potential.x - node.x,
+            potential.y - node.y,
+          );
+          if (isTimelike) {
+            // Are they already connected?
+            if (direction == "vertical" && node.point.isPast(potential.point)) {
+              continue;
+            }
+            if (
+              direction == "horizontal" &&
+              node.point.isRight(potential.point)
+            ) {
+              continue;
+            }
 
-          // Draw the line!
-          const edge = new Edge(node.point, potential.point);
-          this.edges.push(edge);
-          this.edgesHolder.addChild(edge);
-          node.point.downConnections.push(potential.point);
-          potential.point.upConnections.push(node.point);
-          let found = false;
-          for (const p of this.previousEdges) {
-            if (p[0] == node.point && p[1] == potential.point) {
-              found = true;
-              break;
+            // This is no longer a root
+            if (direction == "vertical") {
+              const index = roots.indexOf(potential);
+              if (index >= 0) {
+                roots.splice(index, 1);
+              }
+            } else {
+              const index = antiroots.indexOf(potential);
+              if (index >= 0) {
+                antiroots.splice(index, 1);
+              }
+            }
+
+            if (direction == "vertical") {
+              node.point.downConnections.push(potential.point);
+              potential.point.upConnections.push(node.point);
+            } else {
+              node.point.rightConnections.push(potential.point);
+              potential.point.leftConnections.push(node.point);
+            }
+
+            // Draw the line!
+            if (direction == "vertical") {
+              const edge = new Edge(node.point, potential.point);
+              this.edges.push(edge);
+              this.edgesHolder.addChild(edge);
+              let found = false;
+              for (const p of this.previousEdges) {
+                if (p[0] == node.point && p[1] == potential.point) {
+                  found = true;
+                  break;
+                }
+              }
+              if (!found) {
+                numNew++;
+              }
+              currentEdges.push([node.point, potential.point]);
+            } else {
+              const edge = new Edge(node.point, potential.point, true);
+              edge.visible = false;
+              this.antiedges.push(edge);
+              this.antiedgesHolder.addChild(edge);
             }
           }
-          if (!found) {
-            numNew++;
-          }
-          currentEdges.push([node.point, potential.point]);
         }
       }
     }
@@ -341,6 +385,10 @@ export default class Board extends PIXI.Container {
     for (const r of roots) {
       this.roots.push(r.point);
     }
+    for (const r of antiroots) {
+      this.antiroots.push(r.point);
+    }
+
     this.previousEdges = currentEdges;
     return numNew;
   }

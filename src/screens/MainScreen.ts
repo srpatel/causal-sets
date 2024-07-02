@@ -182,7 +182,9 @@ export default class MainScreen extends Screen {
 
     o.eventMode = "static";
     o.cursor = "pointer";
-    // Hover over an objective panel to see the highlighted nodes
+    // Hover over an objective panel to see the highlighted nodes,
+    // and the description of it...
+    // TODO : On mobile, pointerdown also works
     o.on("pointerenter", () => {
       for (const n of this.board.nodes) {
         n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
@@ -200,6 +202,16 @@ export default class MainScreen extends Screen {
               : 0.2;
         }
       }
+      for (const e of this.board.antiedges) {
+        e.visible = false;
+        if (o.type == "longest-antichain") {
+          e.visible =
+            o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to);
+        } else if (o.type == "most-antiedges") {
+          e.visible =
+            o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to);
+        }
+      }
     });
     o.on("pointerleave", () => {
       for (const n of this.board.nodes) {
@@ -207,6 +219,9 @@ export default class MainScreen extends Screen {
       }
       for (const e of this.board.edges) {
         e.alpha = 1;
+      }
+      for (const e of this.board.antiedges) {
+        e.visible = false;
       }
     });
 

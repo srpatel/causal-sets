@@ -111,11 +111,13 @@ export default class ObjectivePanel extends PIXI.Container {
   }
 
   calculate(board: Board) {
-    if (this.type == "longest-chain") {
+    if (this.type == "longest-chain" || this.type == "longest-antichain") {
       // longest chain...
       let num = 0;
       this.highlightNodes.clear();
-      for (const r of board.roots) {
+      const roots =
+        this.type == "longest-chain" ? board.roots : board.antiroots;
+      for (const r of roots) {
         // Starting at each root node, find the longest chain!
         const distances: Map<Node, number> = new Map();
         for (const n of board.nodes) {
@@ -132,7 +134,11 @@ export default class ObjectivePanel extends PIXI.Container {
 
           if (dist == -Infinity) continue;
 
-          for (const adj of n.downConnections) {
+          const connections =
+            this.type == "longest-chain"
+              ? n.downConnections
+              : n.rightConnections;
+          for (const adj of connections) {
             const currentDist = distances.get(adj);
             const proposedDist = dist + 1;
             if (proposedDist > currentDist) {
@@ -159,7 +165,11 @@ export default class ObjectivePanel extends PIXI.Container {
           while (currentDist > 0) {
             this.highlightNodes.add(currentNode);
             currentDist--;
-            for (const adj of currentNode.upConnections) {
+            const connections =
+              this.type == "longest-chain"
+                ? currentNode.upConnections
+                : currentNode.leftConnections;
+            for (const adj of connections) {
               if (distances.get(adj) == currentDist) {
                 currentNode = adj;
                 break;
@@ -192,14 +202,16 @@ export default class ObjectivePanel extends PIXI.Container {
         }
       }
       this.points = num;
-    } else if (this.type == "most-edges") {
+    } else if (this.type == "most-edges" || this.type == "most-antiedges") {
       // node with most connections
       let numConnections = 0;
       let node = null;
       for (const n of board.nodes) {
         const num = n.upConnections.length + n.downConnections.length;
-        if (num > numConnections) {
-          numConnections = num;
+        const antinum = n.leftConnections.length + n.rightConnections.length;
+        const actualNum = this.type == "most-edges" ? num : antinum;
+        if (actualNum > numConnections) {
+          numConnections = actualNum;
           node = n;
         }
       }
