@@ -128,7 +128,7 @@ export default class ImmediatePanel extends PIXI.Container {
     if (this.target == num || (this.target <= num && this.target == 5)) {
       this.target = this.randomTarget();
       this.updateText();
-      this.points += 5;
+      this.points += 3;
       this.lblPoints.text = "" + this.points;
       Actions.sequence(
         Actions.tintTo(this.background, 0x06aa22, 0.2),
