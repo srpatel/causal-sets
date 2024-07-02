@@ -192,6 +192,9 @@ export default class MainScreen extends Screen {
 
     this.updateDisplay();
 
+    this.selectedDiamond = this.diamonds[1];
+    this.updateSelectedDiamond();
+
     this.addChild(this.infoPanel);
 
     // Add one random end-game scoring panel
@@ -399,11 +402,7 @@ export default class MainScreen extends Screen {
 
         // Click the diamond to select it
         d.on("pointerdown", () => {
-          if (this.selectedDiamond == d) {
-            this.selectedDiamond = null;
-          } else {
-            this.selectedDiamond = d;
-          }
+          this.selectedDiamond = d;
           this.updateSelectedDiamond();
         });
       }
