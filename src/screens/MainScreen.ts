@@ -4,7 +4,9 @@ import _ from "underscore";
 import Screen from "@screens/Screen";
 import Diamond from "@/components/Diamond";
 import Board from "@/components/Board";
-import ObjectivePanel from "@/components/ObjectivePanel";
+import ObjectivePanel, {
+  getRandomObjective,
+} from "@/components/ObjectivePanel";
 import Font from "@/utils/Font";
 import { ScoringType } from "@/components/Node";
 import Colour from "@/utils/Colour";
@@ -170,7 +172,7 @@ export default class MainScreen extends Screen {
     this.addChild(this.infoPanel);
 
     // Add one random end-game scoring panel
-    const o = new ObjectivePanel(Math.random() < 0.5 ? 0 : 6);
+    const o = new ObjectivePanel(getRandomObjective());
     this.objectivePanel = o;
     o.calculate(this.board);
     this.addChild(o);
@@ -186,7 +188,7 @@ export default class MainScreen extends Screen {
         n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
       }
       for (const e of this.board.edges) {
-        if (o.type == 6) {
+        if (o.type == "most-edges") {
           e.alpha =
             o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to)
               ? 1

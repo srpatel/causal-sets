@@ -5,14 +5,35 @@ import Board from "./Board";
 import Node from "./Node";
 import Colour from "@/utils/Colour";
 
+type ObjectiveType =
+  | "longest-chain"
+  | "longest-antichain"
+  | "most-edges"
+  | "most-antiedges"
+  | "one-past"
+  | "one-future";
+
+export function getRandomObjective() {
+  const possibles: ObjectiveType[] = [
+    "longest-chain",
+    "longest-antichain",
+    "most-edges",
+    "most-antiedges",
+    "one-past",
+    "one-future",
+  ];
+  return _.sample(possibles);
+}
+
 export default class ObjectivePanel extends PIXI.Container {
   private background: PIXI.Sprite;
   private lblDesc: PIXI.BitmapText;
   private lblPoints: PIXI.BitmapText;
-  type: number;
+  private sprite: PIXI.Sprite;
+  type: ObjectiveType;
   highlightNodes: Set<Node> = new Set<Node>();
   points: number = 0;
-  constructor(type: number) {
+  constructor(type: ObjectiveType) {
     super();
 
     this.type = type;
@@ -23,22 +44,34 @@ export default class ObjectivePanel extends PIXI.Container {
     this.addChild(this.background);
 
     let text = "";
-
-    if (type == 0) {
+    let spriteName = null;
+    if (type == "longest-chain") {
       text = "+1 for each node in longest chain";
-    } else if (type == 1) {
-      text = "+1 for each connection to gold nodes";
-    } else if (type == 2) {
-      text = "+10 for each post";
-    } else if (type == 3) {
+      spriteName = "objective-chain";
+    } else if (type == "longest-antichain") {
       text = "+1 for each node in longest anti-chain (broken)";
-    } else if (type == 4) {
-      text = "+3 for each root node";
-    } else if (type == 5) {
-      text = "+2 for each diamond";
-    } else if (type == 6) {
-      text = "+1 for node with most connections";
+      spriteName = "objective-antichain";
+    } else if (type == "most-edges") {
+      text = "+1 for node with most edges";
+      spriteName = "objective-edges";
+    } else if (type == "most-antiedges") {
+      text = "+1 for node with most anti-edges";
+      spriteName = "objective-antiedges";
+    } else if (type == "one-past") {
+      text = "+1 for nodes with exactly one past node";
+      spriteName = "objective-onepast";
+    } else if (type == "one-future") {
+      text = "+1 for nodes with exactly one future node";
+      spriteName = "objective-onefuture";
     }
+
+    const sprite = PIXI.Sprite.from(spriteName + ".png");
+    this.sprite = sprite;
+    sprite.tint = Colour.DARK;
+    sprite.anchor.set(0.5);
+    sprite.scale.set(0.8);
+    sprite.y = -15;
+    this.addChild(sprite);
 
     this.lblDesc = new PIXI.BitmapText({
       text,
@@ -49,8 +82,9 @@ export default class ObjectivePanel extends PIXI.Container {
       },
     });
     this.lblDesc.anchor.set(0.5);
-    this.lblDesc.position.set(0, -30);
+    this.lblDesc.position.set(0, -15);
     this.lblDesc.tint = Colour.DARK;
+    this.lblDesc.visible = false;
     this.addChild(this.lblDesc);
 
     this.lblPoints = new PIXI.BitmapText({
@@ -58,15 +92,26 @@ export default class ObjectivePanel extends PIXI.Container {
       style: Font.makeFontOptions("medium"),
     });
     this.lblPoints.anchor.set(0.5, 1);
-    this.lblPoints.position.set(0, 150 / 2 - 10);
+    this.lblPoints.position.set(0, 150 / 2 + 15);
     this.lblPoints.tint = Colour.DARK;
     this.addChild(this.lblPoints);
 
-    // fn to update/calc score?
+    this.on("pointerenter", () => {
+      this.lblDesc.visible = true;
+      if (this.sprite) {
+        this.sprite.alpha = 0.2;
+      }
+    });
+    this.on("pointerleave", () => {
+      this.lblDesc.visible = false;
+      if (this.sprite) {
+        this.sprite.alpha = 1;
+      }
+    });
   }
 
   calculate(board: Board) {
-    if (this.type == 0) {
+    if (this.type == "longest-chain") {
       // longest chain...
       let num = 0;
       this.highlightNodes.clear();
@@ -125,72 +170,29 @@ export default class ObjectivePanel extends PIXI.Container {
         }
       }
       this.points = num;
-    } else if (this.type == 1) {
-      // gold connections...
+    } else if (this.type == "one-future") {
       let num = 0;
       this.highlightNodes.clear();
       for (const n of board.nodes) {
-        if (n.type != "normal") {
-          this.highlightNodes.add(n);
-          num += n.upConnections.length + n.downConnections.length;
-        }
-      }
-      this.points = num;
-    } else if (this.type == 2) {
-      // posts -- related to everything means "past" + "future" is all nodes
-      let num = 0;
-      this.highlightNodes.clear();
-      for (const n of board.nodes) {
-        const p = n.getPast();
         const f = n.getFuture();
-        const isPost = 1 + p.size + f.size == board.nodes.length;
-        if (isPost) {
-          num += 10;
-          this.highlightNodes.add(n);
-        }
-      }
-      this.points = num;
-    } else if (this.type == 3) {
-      // anti-chain
-      let antichain = 0;
-      let antichainSource = null;
-      for (const n of board.nodes) {
-        const p = n.getPast();
-        const f = n.getFuture();
-        const antichainCurrent = board.nodes.length - (1 + p.size + f.size);
-        if (antichainCurrent > antichain) {
-          antichainSource = n;
-          antichain = antichainCurrent;
-        }
-      }
-      this.highlightNodes.clear();
-      if (antichainSource) {
-        this.highlightNodes.add(antichainSource);
-        const p = antichainSource.getPast();
-        const f = antichainSource.getFuture();
-        for (const n of board.nodes) {
-          if (n == antichainSource) continue;
-          if (p.has(n)) continue;
-          if (f.has(n)) continue;
-          this.highlightNodes.add(n);
-        }
-      }
-      this.points = this.highlightNodes.size;
-    } else if (this.type == 4) {
-      // roots
-      let num = 0;
-      this.highlightNodes.clear();
-      for (const n of board.nodes) {
-        if (n.upConnections.length == 0) {
+        if (f.size == 1) {
           num += 1;
           this.highlightNodes.add(n);
         }
       }
-      this.points = num * 3;
-    } else if (this.type == 5) {
-      // Diamonds
-      // Ask stav?
-    } else if (this.type == 6) {
+      this.points = num;
+    } else if (this.type == "one-past") {
+      let num = 0;
+      this.highlightNodes.clear();
+      for (const n of board.nodes) {
+        const f = n.getPast();
+        if (f.size == 1) {
+          num += 1;
+          this.highlightNodes.add(n);
+        }
+      }
+      this.points = num;
+    } else if (this.type == "most-edges") {
       // node with most connections
       let numConnections = 0;
       let node = null;
