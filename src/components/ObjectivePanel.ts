@@ -36,6 +36,9 @@ export default class ObjectivePanel extends PIXI.Container {
   constructor(type: ObjectiveType) {
     super();
 
+    this.eventMode = "static";
+    this.cursor = "pointer";
+
     this.type = type;
 
     this.background = PIXI.Sprite.from("circle.png");

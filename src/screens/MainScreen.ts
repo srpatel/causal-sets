@@ -179,9 +179,6 @@ export default class MainScreen extends Screen {
 
     this.immediatePanel = new ImmediatePanel();
     this.addChild(this.immediatePanel);
-
-    o.eventMode = "static";
-    o.cursor = "pointer";
     // Hover over an objective panel to see the highlighted nodes,
     // and the description of it...
     // TODO : On mobile, pointerdown also works

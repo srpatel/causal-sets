@@ -9,6 +9,7 @@ import { Actions } from "pixi-actions";
 export default class ImmediatePanel extends PIXI.Container {
   private background: PIXI.Sprite;
   private lblDesc: PIXI.BitmapText;
+  private lblMultiplier: PIXI.BitmapText;
   private lblPoints: PIXI.BitmapText;
   target: number;
   highlightNodes: Set<Node> = new Set<Node>();
@@ -17,12 +18,49 @@ export default class ImmediatePanel extends PIXI.Container {
   constructor() {
     super();
 
+    this.eventMode = "static";
+    this.cursor = "pointer";
+
     this.target = this.randomTarget();
 
     this.background = PIXI.Sprite.from("circle.png");
     this.background.anchor.set(0.5);
     this.background.tint = Colour.SPACETIME_BG;
     this.addChild(this.background);
+
+    const sprite = PIXI.Sprite.from("edge.png");
+    sprite.anchor.set(0.5);
+    sprite.scale.set(-1, 1);
+    sprite.tint = Colour.DARK;
+    sprite.x = 25;
+    sprite.y = -9;
+    this.addChild(sprite);
+
+    const lblCross = new PIXI.BitmapText({
+      text: "x",
+      style: {
+        ...Font.makeFontOptions("big"),
+        wordWrap: true,
+        wordWrapWidth: 150,
+      },
+    });
+    lblCross.anchor.set(0.5);
+    lblCross.position.set(0, -15);
+    lblCross.tint = Colour.DARK;
+    this.addChild(lblCross);
+
+    this.lblMultiplier = new PIXI.BitmapText({
+      text: "0",
+      style: {
+        ...Font.makeFontOptions("big"),
+        wordWrap: true,
+        wordWrapWidth: 150,
+      },
+    });
+    this.lblMultiplier.anchor.set(1, 0.5);
+    this.lblMultiplier.position.set(-15, -12);
+    this.lblMultiplier.tint = Colour.DARK;
+    this.addChild(this.lblMultiplier);
 
     this.lblDesc = new PIXI.BitmapText({
       text: "",
@@ -34,8 +72,9 @@ export default class ImmediatePanel extends PIXI.Container {
     });
     this.updateText();
     this.lblDesc.anchor.set(0.5);
-    this.lblDesc.position.set(0, -30);
+    this.lblDesc.position.set(0, -9);
     this.lblDesc.tint = Colour.DARK;
+    this.lblDesc.visible = false;
     this.addChild(this.lblDesc);
 
     this.lblPoints = new PIXI.BitmapText({
@@ -43,19 +82,37 @@ export default class ImmediatePanel extends PIXI.Container {
       style: Font.makeFontOptions("medium"),
     });
     this.lblPoints.anchor.set(0.5, 1);
-    this.lblPoints.position.set(0, 150 / 2 - 10);
+    this.lblPoints.position.set(0, 150 / 2 + 15);
     this.lblPoints.tint = Colour.DARK;
     this.addChild(this.lblPoints);
+
+    this.on("pointerenter", () => {
+      this.lblDesc.visible = true;
+      sprite.alpha = 0.2;
+      lblCross.alpha = 0.2;
+      this.lblMultiplier.alpha = 0.2;
+    });
+    this.on("pointerleave", () => {
+      this.lblDesc.visible = false;
+      sprite.alpha = 1;
+      lblCross.alpha = 1;
+      this.lblMultiplier.alpha = 1;
+    });
   }
 
   updateText() {
     let text = "";
     if (this.target == 1) {
-      text = `${this.target} new edge with a single tile:\n+5`;
+      text = `${this.target} new edge with a single tile`;
     } else if (this.target == 5) {
-      text = `${this.target}+ new edges with a single tile:\n+5`;
+      text = `${this.target}+ new edges with a single tile`;
     } else {
-      text = `${this.target} new edges with a single tile:\n+5`;
+      text = `${this.target} new edges with a single tile`;
+    }
+    if (this.target == 5) {
+      this.lblMultiplier.text = "" + this.target + "+";
+    } else {
+      this.lblMultiplier.text = "" + this.target;
     }
     this.lblDesc.text = text;
   }
