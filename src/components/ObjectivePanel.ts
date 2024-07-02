@@ -49,19 +49,19 @@ export default class ObjectivePanel extends PIXI.Container {
       text = "+1 for each node in longest chain";
       spriteName = "objective-chain";
     } else if (type == "longest-antichain") {
-      text = "+1 for each node in longest anti-chain (broken)";
+      text = "+1 for each node in longest anti-chain";
       spriteName = "objective-antichain";
     } else if (type == "most-edges") {
-      text = "+1 for node with most edges";
+      text = "+1 for each edge from node with most edges";
       spriteName = "objective-edges";
     } else if (type == "most-antiedges") {
-      text = "+1 for node with most anti-edges";
+      text = "+1 for each anti-edge from node with most anti-edges";
       spriteName = "objective-antiedges";
     } else if (type == "one-past") {
-      text = "+1 for nodes with exactly one past node";
+      text = "+1 for each node with exactly one past node";
       spriteName = "objective-onepast";
     } else if (type == "one-future") {
-      text = "+1 for nodes with exactly one future node";
+      text = "+1 for each node with exactly one future node";
       spriteName = "objective-onefuture";
     }
 

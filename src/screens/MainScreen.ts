@@ -233,11 +233,11 @@ export default class MainScreen extends Screen {
       this.addChild(this.moneyTriangle);
 
       const label = new PIXI.BitmapText({
-        text: "Energy",
+        text: "Cost",
         style: Font.makeFontOptions("small"),
       });
       label.anchor.set(0.5);
-      label.position.set(-12, 65);
+      label.position.set(-20, 65);
       label.tint = Colour.DARK;
       this.moneyTriangle.addChild(label);
     }
