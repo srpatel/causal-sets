@@ -75,6 +75,11 @@ export default class Diamond extends PIXI.Container {
       points = [[20, 0]];
     } else if (num == 2) {
       points = [[30, -15]];
+    } else if (num == 3) {
+      points = [
+        [10, -25],
+        [-5, 50],
+      ];
     }
     for (const p of points) {
       // Inside the area! Put a point here.

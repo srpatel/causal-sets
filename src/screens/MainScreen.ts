@@ -166,11 +166,13 @@ export default class MainScreen extends Screen {
         );
         // Make sure 3-cost tile is up arrow
         this.diamonds[0].scoringPoint("maximal");
+        this.updateInfoDesc();
+        this.updateSelectedDiamond();
       },
     },
     {
       name: "SELECT_TILE",
-      message: "This tile is special and can give bonus points",
+      message: "The left tile is special and can give 5 bonus points",
       messagePosition: {
         attachTo: () => this.diamonds[1],
         placement: "above",
@@ -179,9 +181,155 @@ export default class MainScreen extends Screen {
       action: () => {
         // Clear cone
         this.board.setConeForNode(null);
-
-        this.diamonds[2].tutorialPoints(1);
       },
+    },
+    {
+      name: "PLACE_ON_BOARD_TEST2",
+      message: "Can you place this one correctly?",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "superabove",
+      },
+    },
+    {
+      name: "FAILURE2",
+      message:
+        "Bad luck! This is not a maximal element.\nTry somewhere else...",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+      tapToContinue: true,
+      highlight: () => this.board.nodes[this.board.nodes.length - 1],
+      action: () => {
+        // Show light-cone to the newly placed tile...
+        this.diamonds[0].scoringPoint("maximal");
+        this.updateInfoDesc();
+        this.updateSelectedDiamond();
+      },
+    },
+    {
+      name: "DUMMY",
+      action: () => {
+        // Re-add energy
+        this.money += 3;
+        // Remove the last diamond
+        this.board.removeLastDiamond();
+        // Go back to test step
+        this.tutorialStep = this.tutorialSteps.findIndex(
+          (s) => s.name == "PLACE_ON_BOARD_TEST2",
+        );
+        this.processTutorial();
+      },
+    },
+    {
+      name: "SUCCESS2",
+      message: "Nice job!\nA maximal element has no upwards edges!",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+      tapToContinue: true,
+      highlight: () => this.board.nodes[this.board.nodes.length - 1],
+      action: () => {
+        // Show light-cone to the newly placed tile...
+        this.updateSelectedDiamond();
+      },
+    },
+    {
+      name: "MESSAGE",
+      message:
+        "This is another objective.\n\nIt's different each game, and gives you points for a certain feature of your board.",
+      tapToContinue: true,
+      highlight: () => this.objectivePanel,
+      action: () => {
+        this.objectivePanel.removeFromParent();
+        const o = new ObjectivePanel("longest-chain");
+        this.objectivePanel = o;
+        o.calculate(this.board);
+        this.addChild(o);
+
+        this.onSizeChanged();
+
+        this.objectivePanel.alpha = 0;
+        Actions.fadeIn(this.objectivePanel, 0.2).play();
+      },
+    },
+    {
+      name: "MESSAGE",
+      message:
+        "You can hover over it to see what it does.\nThis one gives you points for having a long chain.",
+      tapToContinue: true,
+      highlight: () => this.objectivePanel,
+    },
+    {
+      name: "PLACE_ON_BOARD_TEST3",
+      message: "Try to get it up to 5 points with your next tile!",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+      action: () => {
+        // Make sure tile 2 can do this
+        this.diamonds[1].tutorialPoints(3);
+        this.updateSelectedDiamond();
+      },
+    },
+    {
+      name: "FAILURE3",
+      message: "You don't have 5 nodes in a chain.\nTry again?",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+      tapToContinue: true,
+      highlight: () => this.board.nodes[this.board.nodes.length - 1],
+      action: () => {
+        // Make sure tile 2 can do this
+        this.diamonds[1].tutorialPoints(3);
+        this.updateSelectedDiamond();
+      },
+    },
+    {
+      name: "DUMMY",
+      action: () => {
+        // Re-add energy
+        this.money = 13;
+        // Remove the last diamond
+        this.board.removeLastDiamond();
+        // Go back to test step
+        this.tutorialStep = this.tutorialSteps.findIndex(
+          (s) => s.name == "PLACE_ON_BOARD_TEST3",
+        );
+        this.processTutorial();
+      },
+    },
+    {
+      name: "SUCCESS3",
+      message:
+        "Nice job!\nThe objective is different each game, be sure to bear it in mind as you play.",
+      tapToContinue: true,
+      highlight: () => this.board.nodes[this.board.nodes.length - 1],
+    },
+    {
+      name: "MESSAGE",
+      message: "If you want a reminder of the rules, look here",
+      tapToContinue: true,
+      highlight: () => this.sprRules,
+    },
+    {
+      name: "MESSAGE",
+      message:
+        "If you want to learn more about the physics behind the game, look here",
+      tapToContinue: true,
+      highlight: () => this.sprAbout,
+    },
+    {
+      name: "MESSAGE",
+      message:
+        "Now it's over to you to finish the board!\nCan you get over 20 points?",
+      tapToContinue: true,
+      highlight: () => this.sprAbout,
     },
   ];
   private obscurer = new Obscurer();
@@ -386,6 +534,35 @@ export default class MainScreen extends Screen {
                 this.tutorialStep
               ].message = `You created ${numNewEdges} edges.\nTry again?`;
             }
+            this.processTutorial();
+          }
+        } else if (step?.name == "PLACE_ON_BOARD_TEST2") {
+          const lastNode = this.board.nodes[this.board.nodes.length - 1];
+          if (lastNode.scoring) {
+            // Success
+            this.tutorialStep = this.tutorialSteps.findIndex(
+              (s) => s.name == "SUCCESS2",
+            );
+            this.processTutorial();
+          } else {
+            // Failure
+            this.tutorialStep = this.tutorialSteps.findIndex(
+              (s) => s.name == "FAILURE2",
+            );
+            this.processTutorial();
+          }
+        } else if (step?.name == "PLACE_ON_BOARD_TEST3") {
+          if (this.objectivePanel.points >= 5) {
+            // Success
+            this.tutorialStep = this.tutorialSteps.findIndex(
+              (s) => s.name == "SUCCESS3",
+            );
+            this.processTutorial();
+          } else {
+            // Failure
+            this.tutorialStep = this.tutorialSteps.findIndex(
+              (s) => s.name == "FAILURE3",
+            );
             this.processTutorial();
           }
         }
@@ -707,6 +884,10 @@ export default class MainScreen extends Screen {
       this.addChild(this.obscurer);
     }
 
+    this.updateInfoDesc();
+  }
+
+  private updateInfoDesc() {
     const st = this.diamonds?.[0].scoreType;
     if (st === "chain") {
       this.infoDesc.text = "Part of the longest chain";
@@ -813,6 +994,8 @@ export default class MainScreen extends Screen {
         let dy = 0;
         if (pos.placement == "above") {
           dy = (-1 * attachTo.height - this.tutorialMessage.height) / 2 - 20;
+        } else if (pos.placement == "superabove") {
+          dy = (-1 * attachTo.height - this.tutorialMessage.height) / 2 - 90;
         }
         this.tutorialMessage.position.set(
           attachTo.x - this.tutorialMessage.width / 2 + dx,
