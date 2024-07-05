@@ -90,7 +90,7 @@ export default class Diamond extends PIXI.Container {
     }
   }
 
-  sprinklePoints(num: number) {
+  sprinklePoints(num: number, thick = false) {
     // Clear all old points
     while (this.points.length > 0) {
       this.points.pop();
@@ -111,6 +111,9 @@ export default class Diamond extends PIXI.Container {
 
       // Inside the area! Put a point here.
       const node = new Node("normal");
+      if (thick) {
+        node.scale.set(1.3);
+      }
       this.pointsHolder.addChild(node);
       node.position.set(x, y);
       this.points.push(node);

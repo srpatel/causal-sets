@@ -4,9 +4,11 @@ import { Actions } from "pixi-actions";
 import Screen from "@screens/Screen";
 import MainScreen from "@screens/MainScreen";
 import Colour from "./utils/Colour";
+import FirstTimeModal from "./screens/FirstTimeModal";
 
 export default class App extends PIXI.Application {
   static instance: App;
+  static TITLE = "CAUSETS";
 
   private static TARGET_WIDTH = 800;
   private static TARGET_HEIGHT = 1200;
@@ -34,7 +36,10 @@ export default class App extends PIXI.Application {
     });
     await PIXI.Assets.load(["fredoka.fnt", "spritesheet.json", "cutout.png"]);
 
-    this.setScreen(new MainScreen(true));
+    this.setScreen(new MainScreen(false));
+
+    // If you haven't yet completed a run...add the First Time modal
+    this.addModal(new FirstTimeModal());
 
     PIXI.Ticker.shared.add((tick) => Actions.tick(tick.deltaTime / 60));
   }

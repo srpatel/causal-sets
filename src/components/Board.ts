@@ -26,11 +26,15 @@ export default class Board extends PIXI.Container {
   coneHolder = new PIXI.Container();
   coneGraphics = new PIXI.Graphics();
   previousEdges: [Node, Node][] = [];
+  animated = false;
   constructor(
     dimension: number,
     onClickBackgroundDiamond: (d: Diamond) => void,
+    animated = false,
   ) {
     super();
+
+    this.animated = animated;
 
     this.dimension = dimension;
     this.onClickBackgroundDiamond = onClickBackgroundDiamond;
@@ -111,7 +115,7 @@ export default class Board extends PIXI.Container {
     diamond.position.set(x, y);
   }
 
-  airDropBlanks() {
+  airDropBlanks(blanks = true) {
     let decalation = 0;
     const dropDistance = 40;
     // For every coord without a tile, create a blank tile and airdrop it in
@@ -126,8 +130,12 @@ export default class Board extends PIXI.Container {
         }
         if (!found) {
           const d = new Diamond({ isBackground: false });
+          if (!blanks) {
+            d.sprinklePoints(2, true);
+          }
           d.coords = [i, j];
-          this.addDiamond(d);
+          this.foreground.addChild(d);
+          this.positionDiamond(d);
           d.alpha = 0;
           d.position.y -= dropDistance;
           Actions.sequence(
@@ -136,6 +144,9 @@ export default class Board extends PIXI.Container {
               Actions.fadeIn(d, 0.4),
               Actions.moveTo(d, d.x, d.y + dropDistance, 0.4),
             ),
+            Actions.runFunc(() => {
+              this.addDiamond(d);
+            }),
           ).play();
         }
       }
@@ -373,7 +384,12 @@ export default class Board extends PIXI.Container {
 
             // Draw the line!
             if (direction == "vertical") {
-              const edge = new Edge(node.point, potential.point);
+              const edge = new Edge(
+                node.point,
+                potential.point,
+                false,
+                this.animated ? 5 : 3,
+              );
               this.edges.push(edge);
               this.edgesHolder.addChild(edge);
               let found = false;
@@ -385,6 +401,10 @@ export default class Board extends PIXI.Container {
               }
               if (!found) {
                 numNew++;
+                if (this.animated) {
+                  edge.alpha = 0;
+                  Actions.fadeIn(edge, 0.8).play();
+                }
               }
               currentEdges.push([node.point, potential.point]);
             } else {

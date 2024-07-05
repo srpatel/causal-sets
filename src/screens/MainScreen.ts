@@ -382,7 +382,7 @@ export default class MainScreen extends Screen {
     };
 
     this.lblTitle = new PIXI.BitmapText({
-      text: "CAUSETS",
+      text: App.TITLE,
       style: Font.makeFontOptions("large"),
     });
     this.lblTitle.anchor.set(0.5);
