@@ -335,8 +335,8 @@ export default class Board extends PIXI.Container {
         0, 0,
       ) : new PIXI.Polygon(
         0, 0,
-        2000 - 1, -2000,
-        2000 - 1, 2000,
+        2000, -1999,
+        2000, 1999,
         0, 0,
       );
       for (let i = 0; i < sortedPoints.length; i++) {
