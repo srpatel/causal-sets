@@ -44,6 +44,7 @@ export default class FirstTimeModal extends Modal {
 
     this.board = new Board(2, () => {}, true);
     this.board.scale.set(0.5);
+    this.board.eventMode = "none";
     this.addChild(this.board);
 
     // Animation
@@ -56,6 +57,7 @@ export default class FirstTimeModal extends Modal {
         Actions.runFunc(() => {
           const oldBoard = this.board;
           this.board = new Board(2, () => {}, true);
+          this.board.eventMode = "none";
           this.board.scale.set(0.5);
           this.addChild(this.board);
           this.addChild(oldBoard);
