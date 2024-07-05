@@ -15,7 +15,42 @@ import Button from "@/components/Button";
 import App from "@/App";
 import ImmediatePanel from "@/components/ImmediatePanel";
 import Modal from "./Modal";
+import MessagePanel from "@/components/MessagePanel";
+import Obscurer from "@/components/Obscurer";
 export default class MainScreen extends Screen {
+  private tutorialMode: boolean;
+  private tutorialStep: number = -1;
+  private tutorialSteps = [
+    {
+      name: "SELECT_TILE_1",
+      message: "Select this tile. It costs 2 Energy.",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+      highlight: () => this.diamonds[1],
+      action: () => {
+        // Select 1-cost tile
+        this.selectedDiamond = this.diamonds[2];
+        this.updateSelectedDiamond();
+
+        // Make sure 2-cost tile is three-in-a-line???
+        this.diamonds[1].tutorialPoints(0);
+
+        // Hide the objective circles
+        this.objectivePanel.visible = false;
+        this.immediatePanel.visible = false;
+
+        // TODO : Pick the objectives we want
+      },
+    },
+    {
+      name: "PLACE_ON_BOARD_1",
+      message: "Tap to place it on the board.",
+      highlight: () => this.board.backgroundDiamonds[6],
+    },
+  ];
+  private obscurer = new Obscurer();
   private diamonds: Diamond[] = [null, null, null];
   private infoPanel = new PIXI.Container();
   private infoDesc: PIXI.BitmapText;
@@ -48,9 +83,12 @@ export default class MainScreen extends Screen {
   private lblTitle: PIXI.BitmapText;
   private sprRules: PIXI.Sprite;
   private sprAbout: PIXI.Sprite;
+  private tutorialMessage: PIXI.Container;
   private ticker: PIXI.TickerCallback<void>;
-  constructor() {
+  constructor(tutorialMode: boolean) {
     super();
+
+    this.tutorialMode = tutorialMode;
 
     this.ticker = (tick) => {
       this.visibleMoney -= (this.visibleMoney - this.money) / 5;
@@ -114,6 +152,14 @@ export default class MainScreen extends Screen {
         if (this.money < cost) {
           // TODO : Flash money, we don't have enough!
           return;
+        }
+        const step = this.getTutorialStep();
+        if (step?.name == "PLACE_ON_BOARD_1") {
+          if (step.highlight() != d) {
+            return;
+          } else {
+            this.advanceTutorial();
+          }
         }
         // Place this diamond ontop of the board in the right place.
         this.selectedDiamond.position.set(d.x, d.y);
@@ -256,7 +302,7 @@ export default class MainScreen extends Screen {
       this.addChild(this.moneyTriangle);
 
       const label = new PIXI.BitmapText({
-        text: "Cost",
+        text: "Energy",
         style: Font.makeFontOptions("small"),
       });
       label.anchor.set(0.5);
@@ -303,7 +349,7 @@ export default class MainScreen extends Screen {
       Actions.sequence(
         Actions.fadeOut(this, 0.2),
         Actions.runFunc(() => {
-          const m = new MainScreen();
+          const m = new MainScreen(false);
           m.alpha = 0;
           Actions.fadeIn(m, 0.2).play();
           App.instance.setScreen(m);
@@ -320,6 +366,64 @@ export default class MainScreen extends Screen {
     this.sharePanel.addChild(b2);
     this.addChild(this.sharePanel);
     this.sharePanel.visible = false;
+
+    this.obscurer.tint = 0;
+    this.obscurer.alpha = 0;
+    this.addChild(this.obscurer);
+
+    this.advanceTutorial();
+  }
+
+  private showObscurer() {
+    Actions.clear(this.obscurer);
+    Actions.fadeTo(this.obscurer, 0.72, 0.4).play();
+  }
+  private hideObscurer() {
+    Actions.fadeOut(this.obscurer, 0.2).play();
+  }
+
+  private getTutorialStep() {
+    if (!this.tutorialMode || this.tutorialStep > this.tutorialSteps.length) {
+      return null;
+    }
+    return this.tutorialSteps[this.tutorialStep];
+  }
+  private advanceTutorial() {
+    if (!this.tutorialMode) return;
+    this.tutorialStep++;
+    this.processTutorial();
+  }
+  private advanceTutorialIf(stepName: string) {
+    const step = this.getTutorialStep();
+    if (step?.name == stepName) this.advanceTutorial();
+  }
+  private processTutorial() {
+    // Remove message if there is one...
+    if (this.tutorialMessage) {
+      Actions.fadeOutAndRemove(this.tutorialMessage, 0.4).play();
+      this.tutorialMessage = null;
+    }
+    this.hideObscurer();
+    if (!this.tutorialMode || this.tutorialStep > this.tutorialSteps.length) {
+      return;
+    }
+    const step = this.getTutorialStep();
+    if (step?.message) {
+      // Add a message box to the middle of the screen...
+      const panel = new MessagePanel(step.message);
+      panel.alpha = 0;
+      this.addChild(panel);
+      this.tutorialMessage = panel;
+      Actions.sequence(Actions.delay(0.2), Actions.fadeIn(panel, 0.4)).play();
+    }
+    if (step?.highlight) {
+      // Add the obscurer
+      this.showObscurer();
+    }
+    if (step?.action) {
+      step.action();
+    }
+    this.onSizeChanged();
   }
 
   private checkDecks() {
@@ -402,6 +506,13 @@ export default class MainScreen extends Screen {
 
         // Click the diamond to select it
         d.on("pointerdown", () => {
+          const step = this.getTutorialStep();
+          if (step?.name == "PLACE_ON_BOARD_1") {
+            return;
+          }
+          if (i == 1) {
+            this.advanceTutorialIf("SELECT_TILE_1");
+          }
           this.selectedDiamond = d;
           this.updateSelectedDiamond();
         });
@@ -426,6 +537,14 @@ export default class MainScreen extends Screen {
   }
 
   private updateSelectedDiamond() {
+    if (!this.highlighter.visible) {
+      // Fade it in
+      this.highlighter.alpha = 0;
+      Actions.sequence(
+        Actions.delay(0.2),
+        Actions.fadeIn(this.highlighter, 0.2),
+      ).play();
+    }
     this.highlighter.visible = !!this.selectedDiamond;
     this.infoPanel.visible = this.selectedDiamond == this.diamonds[0];
     if (this.selectedDiamond) {
@@ -497,6 +616,42 @@ export default class MainScreen extends Screen {
       this.diamonds[0].x,
       this.diamonds[0].y - Diamond.HEIGHT - 45,
     );
+
+    if (this.tutorialMessage) {
+      const step = this.tutorialSteps[this.tutorialStep];
+      if (step?.messagePosition) {
+        const pos = step.messagePosition;
+        const attachTo = pos.attachTo();
+        let dx = 0;
+        let dy = 0;
+        if (pos.placement == "above") {
+          dy = (-1 * attachTo.height - this.tutorialMessage.height) / 2 - 20;
+        }
+        this.tutorialMessage.position.set(
+          attachTo.x - this.tutorialMessage.width / 2 + dx,
+          attachTo.y - this.tutorialMessage.height / 2 + dy,
+        );
+      } else {
+        this.tutorialMessage.position.set(
+          (width - this.tutorialMessage.width) / 2,
+          (height - this.tutorialMessage.height) / 2,
+        );
+      }
+    }
+
+    const step = this.getTutorialStep();
+    if (step?.highlight) {
+      const e = step.highlight();
+      let hx = e.x;
+      let hy = e.y;
+      let sentinel = e.parent;
+      while (sentinel != this) {
+        hx += sentinel.parent.x;
+        hy += sentinel.parent.y;
+        sentinel = sentinel.parent;
+      }
+      this.obscurer.setHole(hx, hy);
+    }
   }
 
   onAddedToStage(stage: PIXI.Container<PIXI.ContainerChild>): void {

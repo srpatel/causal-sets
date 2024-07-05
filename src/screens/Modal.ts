@@ -11,7 +11,7 @@ export default class Modal extends Screen {
 
     // Background
     this.background.tint = 0;
-    this.background.alpha = 0.8;
+    this.background.alpha = 0.72;
     this.background.eventMode = "static";
     this.background.on("pointerdown", () => {
       App.instance.popModal();

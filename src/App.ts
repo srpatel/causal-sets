@@ -30,10 +30,11 @@ export default class App extends PIXI.Application {
       autoDensity: true,
       resolution: window.devicePixelRatio,
       eventMode: "auto",
+      roundPixels: true,
     });
-    await PIXI.Assets.load(["fredoka.fnt", "spritesheet.json"]);
+    await PIXI.Assets.load(["fredoka.fnt", "spritesheet.json", "cutout.png"]);
 
-    this.setScreen(new MainScreen());
+    this.setScreen(new MainScreen(true));
 
     PIXI.Ticker.shared.add((tick) => Actions.tick(tick.deltaTime / 60));
   }

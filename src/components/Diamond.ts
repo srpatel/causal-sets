@@ -51,6 +51,30 @@ export default class Diamond extends PIXI.Container {
     this.points.push(node);
   }
 
+  tutorialPoints(num: number) {
+    // Clear all old points
+    while (this.points.length > 0) {
+      this.points.pop();
+    }
+    this.pointsHolder.removeChildren();
+
+    let points: number[][] = [];
+    if (num == 0) {
+      points = [
+        [0, 0],
+        [-50, 0],
+        [50, 0],
+      ];
+    }
+    for (const p of points) {
+      // Inside the area! Put a point here.
+      const node = new Node("normal");
+      this.pointsHolder.addChild(node);
+      node.position.set(p[0], p[1]);
+      this.points.push(node);
+    }
+  }
+
   sprinklePoints(num: number) {
     // Clear all old points
     while (this.points.length > 0) {

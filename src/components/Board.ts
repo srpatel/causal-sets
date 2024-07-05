@@ -8,7 +8,7 @@ import Edge from "./Edge";
 
 export default class Board extends PIXI.Container {
   dimension: number;
-  private backgroundDiamonds: Diamond[] = [];
+  backgroundDiamonds: Diamond[] = [];
   private background: PIXI.Container = new PIXI.Container();
   foregroundDiamonds: Diamond[] = [];
   private potentialDiamond: Diamond = new Diamond({ isBackground: false });
