@@ -47,7 +47,7 @@ export default class FirstTimeModal extends Modal {
     this.addChild(this.board);
 
     // Animation
-    Actions.repeat(
+    const repeat = Actions.repeat(
       Actions.sequence(
         Actions.runFunc(() => {
           this.board.airDropBlanks(false);
@@ -63,6 +63,11 @@ export default class FirstTimeModal extends Modal {
           Actions.fadeOutAndRemove(oldBoard, 0.2).play();
         }),
         Actions.delay(0.2),
+        Actions.runFunc(() => {
+          if (!this.parent) {
+            repeat.stop();
+          }
+        }),
       ),
     ).play();
 
