@@ -15,13 +15,13 @@ export default class ImmediatePanel extends PIXI.Container {
   highlightNodes: Set<Node> = new Set<Node>();
   points: number = 0;
   possibleTargets = _.shuffle([0, 1]);
-  constructor() {
+  constructor(tutorial: boolean) {
     super();
 
     this.eventMode = "static";
     this.cursor = "pointer";
 
-    this.target = this.randomTarget();
+    this.target = tutorial ? 99999 : this.randomTarget();
 
     this.background = PIXI.Sprite.from("circle.png");
     this.background.anchor.set(0.5);

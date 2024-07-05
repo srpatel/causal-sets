@@ -44,6 +44,12 @@ export default class Diamond extends PIXI.Container {
   }
 
   scoringPoint(type: ScoringType) {
+    // Clear all old points
+    while (this.points.length > 0) {
+      this.points.pop();
+    }
+    this.pointsHolder.removeChildren();
+
     this.scoreType = type;
     const node = new Node(type);
     this.pointsHolder.addChild(node);
@@ -61,10 +67,14 @@ export default class Diamond extends PIXI.Container {
     let points: number[][] = [];
     if (num == 0) {
       points = [
-        [0, 0],
-        [-50, 0],
-        [50, 0],
+        [-10, -15],
+        [-55, 10],
+        [60, -10],
       ];
+    } else if (num == 1) {
+      points = [[20, 0]];
+    } else if (num == 2) {
+      points = [[30, -15]];
     }
     for (const p of points) {
       // Inside the area! Put a point here.

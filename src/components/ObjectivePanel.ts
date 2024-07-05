@@ -11,7 +11,8 @@ type ObjectiveType =
   | "most-edges"
   | "most-antiedges"
   | "one-past"
-  | "one-future";
+  | "one-future"
+  | "none";
 
 export function getRandomObjective() {
   const possibles: ObjectiveType[] = [

@@ -4,7 +4,7 @@ import Font from "@/utils/Font";
 import Colour from "@/utils/Colour";
 
 export default class MessagePanel extends PIXI.Container {
-  constructor(message: string) {
+  constructor(message: string, subMessage: string | null = null) {
     super();
 
     const panel = new Panel();
@@ -26,5 +26,20 @@ export default class MessagePanel extends PIXI.Container {
 
     this.addChild(panel);
     this.addChild(label);
+
+    if (subMessage) {
+      const label = new PIXI.BitmapText({
+        text: subMessage,
+        style: {
+          ...Font.makeFontOptions("medium"),
+          wordWrap: true,
+          wordWrapWidth: 520,
+        },
+      });
+      label.anchor.set(0.5);
+      label.tint = 0xffffff;
+      label.position.set(panel.width / 2, panel.height + 5 + label.height / 2);
+      this.addChild(label);
+    }
   }
 }

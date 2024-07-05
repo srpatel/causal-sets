@@ -22,7 +22,7 @@ export default class MainScreen extends Screen {
   private tutorialStep: number = -1;
   private tutorialSteps = [
     {
-      name: "SELECT_TILE_1",
+      name: "SELECT_TILE",
       message: "Select this tile. It costs 2 Energy.",
       messagePosition: {
         attachTo: () => this.diamonds[1],
@@ -42,12 +42,146 @@ export default class MainScreen extends Screen {
         this.immediatePanel.visible = false;
 
         // TODO : Pick the objectives we want
+        // Make sure they give 0 points for now!!
       },
     },
     {
-      name: "PLACE_ON_BOARD_1",
+      name: "PLACE_ON_BOARD",
       message: "Tap to place it on the board.",
       highlight: () => this.board.backgroundDiamonds[6],
+    },
+    {
+      name: "SELECT_TILE",
+      message: "Select this tile",
+      messagePosition: {
+        attachTo: () => this.diamonds[2],
+        placement: "above",
+      },
+      highlight: () => this.diamonds[2],
+      action: () => {
+        // Make sure 1-cost tile is in the middle
+        this.diamonds[2].tutorialPoints(1);
+      },
+    },
+    {
+      name: "PLACE_ON_BOARD",
+      message: "Tap to place it on the board.",
+      highlight: () => this.board.backgroundDiamonds[5],
+    },
+    {
+      name: "MESSAGE",
+      message: "Edges are drawn when nodes fall in the light-cone.",
+      tapToContinue: true,
+      highlight: () => this.board.nodes[this.board.nodes.length - 1],
+      action: () => {
+        // Show light-cone to the newly placed tile...
+        this.diamonds[2].tutorialPoints(2);
+        this.updateSelectedDiamond();
+        this.board.setConeForNode(
+          this.board.nodes[this.board.nodes.length - 1],
+        );
+      },
+    },
+    {
+      name: "MESSAGE",
+      message:
+        "This is an objective.\n\nIf you create a specific number of edges with a new tile, you get bonus points.",
+      tapToContinue: true,
+      highlight: () => this.immediatePanel,
+      action: () => {
+        this.immediatePanel.target = 3;
+        this.immediatePanel.updateText();
+        this.immediatePanel.visible = true;
+        this.immediatePanel.alpha = 0;
+        Actions.fadeIn(this.immediatePanel, 0.2).play();
+
+        this.board.setConeForNode(null);
+      },
+    },
+    {
+      name: "MESSAGE",
+      message: "Here we need to create exactly three new edges.",
+      tapToContinue: true,
+      highlight: () => this.immediatePanel,
+      action: () => {
+        this.diamonds[2].tutorialPoints(2);
+      },
+    },
+    {
+      name: "PLACE_ON_BOARD_TEST",
+      message: "See if you can complete the objective with your current tile",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+    },
+    {
+      name: "FAILURE",
+      message: "You created N new edges.\nTry again?",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+      tapToContinue: true,
+      highlight: () => this.board.nodes[this.board.nodes.length - 1],
+      action: () => {
+        // Show light-cone to the newly placed tile...
+        this.diamonds[2].tutorialPoints(2);
+        this.updateSelectedDiamond();
+        this.board.setConeForNode(
+          this.board.nodes[this.board.nodes.length - 1],
+        );
+      },
+    },
+    {
+      name: "DUMMY",
+      action: () => {
+        // Re-add energy
+        this.money++;
+        // Remove the last diamond
+        this.board.removeLastDiamond();
+        // Go back to test step
+        this.tutorialStep = this.tutorialSteps.findIndex(
+          (s) => s.name == "PLACE_ON_BOARD_TEST",
+        );
+        this.processTutorial();
+        // Clear cone
+        this.board.setConeForNode(null);
+      },
+    },
+    {
+      name: "SUCCESS",
+      message: "Nice job!\nYou made exactly three edges!",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+      tapToContinue: true,
+      highlight: () => this.board.nodes[this.board.nodes.length - 1],
+      action: () => {
+        // Show light-cone to the newly placed tile...
+        this.updateSelectedDiamond();
+        this.board.setConeForNode(
+          this.board.nodes[this.board.nodes.length - 1],
+        );
+        // Make sure 3-cost tile is up arrow
+        this.diamonds[0].scoringPoint("maximal");
+      },
+    },
+    {
+      name: "SELECT_TILE",
+      message: "This tile is special and can give bonus points",
+      messagePosition: {
+        attachTo: () => this.diamonds[1],
+        placement: "above",
+      },
+      highlight: () => this.diamonds[0],
+      action: () => {
+        // Clear cone
+        this.board.setConeForNode(null);
+
+        this.diamonds[2].tutorialPoints(1);
+      },
     },
   ];
   private obscurer = new Obscurer();
@@ -154,12 +288,12 @@ export default class MainScreen extends Screen {
           return;
         }
         const step = this.getTutorialStep();
-        if (step?.name == "PLACE_ON_BOARD_1") {
+        if (step?.name == "PLACE_ON_BOARD") {
           if (step.highlight() != d) {
             return;
-          } else {
-            this.advanceTutorial();
           }
+        } else if (step?.name == "SELECT_TILE") {
+          return;
         }
         // Place this diamond ontop of the board in the right place.
         this.selectedDiamond.position.set(d.x, d.y);
@@ -220,6 +354,41 @@ export default class MainScreen extends Screen {
           this.sharePanel.alpha = 0;
           Actions.fadeIn(this.sharePanel, 0.2).play();
         }
+
+        if (step?.name == "PLACE_ON_BOARD") {
+          this.advanceTutorial();
+        } else if (step?.name == "PLACE_ON_BOARD_TEST") {
+          if (numNewEdges == 3) {
+            // Success
+            this.tutorialStep = this.tutorialSteps.findIndex(
+              (s) => s.name == "SUCCESS",
+            );
+            this.processTutorial();
+          } else {
+            // Failure
+            this.tutorialStep = this.tutorialSteps.findIndex(
+              (s) => s.name == "FAILURE",
+            );
+            if (numNewEdges == 1) {
+              this.tutorialSteps[
+                this.tutorialStep
+              ].message = `You only created 1 edge.\nTry again?`;
+            } else if (numNewEdges == 0) {
+              this.tutorialSteps[
+                this.tutorialStep
+              ].message = `You created no edges.\nTry again?`;
+            } else if (numNewEdges == 2) {
+              this.tutorialSteps[
+                this.tutorialStep
+              ].message = `You only created 2 edges.\nTry again?`;
+            } else {
+              this.tutorialSteps[
+                this.tutorialStep
+              ].message = `You created ${numNewEdges} edges.\nTry again?`;
+            }
+            this.processTutorial();
+          }
+        }
       }
     });
 
@@ -244,12 +413,12 @@ export default class MainScreen extends Screen {
     this.addChild(this.infoPanel);
 
     // Add one random end-game scoring panel
-    const o = new ObjectivePanel(getRandomObjective());
+    const o = new ObjectivePanel(tutorialMode ? "none" : getRandomObjective());
     this.objectivePanel = o;
     o.calculate(this.board);
     this.addChild(o);
 
-    this.immediatePanel = new ImmediatePanel();
+    this.immediatePanel = new ImmediatePanel(tutorialMode ? true : false);
     this.addChild(this.immediatePanel);
     // Hover over an objective panel to see the highlighted nodes,
     // and the description of it...
@@ -370,6 +539,10 @@ export default class MainScreen extends Screen {
     this.obscurer.tint = 0;
     this.obscurer.alpha = 0;
     this.addChild(this.obscurer);
+    this.obscurer.on("pointerdown", (e) => {
+      this.advanceTutorial();
+      e.stopPropagation();
+    });
 
     this.advanceTutorial();
   }
@@ -398,6 +571,7 @@ export default class MainScreen extends Screen {
     if (step?.name == stepName) this.advanceTutorial();
   }
   private processTutorial() {
+    this.obscurer.eventMode = "none";
     // Remove message if there is one...
     if (this.tutorialMessage) {
       Actions.fadeOutAndRemove(this.tutorialMessage, 0.4).play();
@@ -410,11 +584,18 @@ export default class MainScreen extends Screen {
     const step = this.getTutorialStep();
     if (step?.message) {
       // Add a message box to the middle of the screen...
-      const panel = new MessagePanel(step.message);
+      const panel = new MessagePanel(
+        step.message,
+        step.tapToContinue ? "[ Tap to continue ]" : null,
+      );
       panel.alpha = 0;
       this.addChild(panel);
       this.tutorialMessage = panel;
       Actions.sequence(Actions.delay(0.2), Actions.fadeIn(panel, 0.4)).play();
+
+      if (step.tapToContinue) {
+        this.obscurer.eventMode = "static";
+      }
     }
     if (step?.highlight) {
       // Add the obscurer
@@ -507,17 +688,23 @@ export default class MainScreen extends Screen {
         // Click the diamond to select it
         d.on("pointerdown", () => {
           const step = this.getTutorialStep();
-          if (step?.name == "PLACE_ON_BOARD_1") {
+          if (
+            step?.name == "PLACE_ON_BOARD" ||
+            step?.name == "PLACE_ON_BOARD_TEST"
+          ) {
             return;
           }
-          if (i == 1) {
-            this.advanceTutorialIf("SELECT_TILE_1");
+          if (step?.name == "SELECT_TILE") {
+            if (d == step.highlight()) {
+              this.advanceTutorial();
+            }
           }
           this.selectedDiamond = d;
           this.updateSelectedDiamond();
         });
       }
       this.checkDecks();
+      this.addChild(this.obscurer);
     }
 
     const st = this.diamonds?.[0].scoreType;

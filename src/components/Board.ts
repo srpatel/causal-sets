@@ -142,6 +142,23 @@ export default class Board extends PIXI.Container {
     }
   }
 
+  removeLastDiamond() {
+    const ds = this.foregroundDiamonds.splice(
+      this.foregroundDiamonds.length - 1,
+      1,
+    );
+    const diamond = ds[0];
+    this.foreground.removeChild(diamond);
+
+    for (const p of diamond.points) {
+      const i = this.nodes.indexOf(p);
+      this.nodes.splice(i, 1);
+      this.nodesHolder.removeChild(p);
+    }
+
+    this.drawEdges();
+  }
+
   addDiamond(diamond: Diamond, andRecalculate: boolean = true) {
     for (const d of this.foregroundDiamonds) {
       if (
