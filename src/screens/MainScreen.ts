@@ -356,7 +356,7 @@ export default class MainScreen extends Screen {
   private objectivePanel: ObjectivePanel;
   private immediatePanel: ImmediatePanel;
   private board: Board;
-  private money: number = 1; //20;
+  private money: number = 20;
   private edgeScore = 0;
   private score: number = 0;
   private visibleScore: number = 0;
