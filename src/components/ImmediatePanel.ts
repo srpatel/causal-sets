@@ -7,7 +7,7 @@ import Colour from "@/utils/Colour";
 import { Actions } from "pixi-actions";
 
 export default class ImmediatePanel extends PIXI.Container {
-  private background: PIXI.Sprite;
+  background: PIXI.Sprite;
   private lblDesc: PIXI.BitmapText;
   private lblMultiplier: PIXI.BitmapText;
   private lblPoints: PIXI.BitmapText;

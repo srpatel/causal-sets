@@ -248,6 +248,7 @@ export default class MainScreen extends Screen {
         this.objectivePanel = o;
         o.calculate(this.board);
         this.addChild(o);
+        this.setupObjectiveEvents();
 
         this.onSizeChanged();
 
@@ -355,7 +356,7 @@ export default class MainScreen extends Screen {
   private objectivePanel: ObjectivePanel;
   private immediatePanel: ImmediatePanel;
   private board: Board;
-  private money: number = 20;
+  private money: number = 1; //20;
   private edgeScore = 0;
   private score: number = 0;
   private visibleScore: number = 0;
@@ -432,7 +433,33 @@ export default class MainScreen extends Screen {
 
         const cost = 3 - index;
         if (this.money < cost) {
-          // TODO : Flash money, we don't have enough!
+          // Flash money, we don't have enough!
+          const tintMe = Actions.runFunc(() => {
+            this.lblMoney.tint = Colour.HIGHLIGHT;
+          });
+          const tontMe = Actions.runFunc(() => {
+            this.lblMoney.tint = Colour.DARK;
+          });
+          Actions.repeat(
+            Actions.sequence(
+              Actions.tintTo(this.diamondCosts[index], Colour.HIGHLIGHT, 0.05),
+              Actions.tintTo(
+                this.diamondCosts[index],
+                Colour.SPACETIME_BG,
+                0.05,
+              ),
+            ),
+            5,
+          ).play();
+          Actions.repeat(
+            Actions.sequence(
+              tintMe,
+              Actions.delay(0.05),
+              tontMe,
+              Actions.delay(0.05),
+            ),
+            5,
+          ).play();
           return;
         }
         const step = this.getTutorialStep();
@@ -573,6 +600,7 @@ export default class MainScreen extends Screen {
       s.anchor.set(0.5);
       s.scale.set(0.8);
       this.addChild(s);
+      s.tint = Colour.SPACETIME_BG;
     }
 
     this.addChild(this.board);
@@ -597,48 +625,7 @@ export default class MainScreen extends Screen {
 
     this.immediatePanel = new ImmediatePanel(tutorialMode ? true : false);
     this.addChild(this.immediatePanel);
-    // Hover over an objective panel to see the highlighted nodes,
-    // and the description of it...
-    // TODO : On mobile, pointerdown also works
-    o.on("pointerenter", () => {
-      for (const n of this.board.nodes) {
-        n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
-      }
-      for (const e of this.board.edges) {
-        if (o.type == "most-edges") {
-          e.alpha =
-            o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to)
-              ? 1
-              : 0.2;
-        } else {
-          e.alpha =
-            o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to)
-              ? 1
-              : 0.2;
-        }
-      }
-      for (const e of this.board.antiedges) {
-        e.visible = false;
-        if (o.type == "longest-antichain") {
-          e.visible =
-            o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to);
-        } else if (o.type == "most-antiedges") {
-          e.visible =
-            o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to);
-        }
-      }
-    });
-    o.on("pointerleave", () => {
-      for (const n of this.board.nodes) {
-        n.alpha = 1;
-      }
-      for (const e of this.board.edges) {
-        e.alpha = 1;
-      }
-      for (const e of this.board.antiedges) {
-        e.visible = false;
-      }
-    });
+    this.setupObjectiveEvents();
 
     {
       const t = PIXI.Sprite.from("triangle.png");
@@ -722,6 +709,52 @@ export default class MainScreen extends Screen {
     });
 
     this.advanceTutorial();
+  }
+
+  setupObjectiveEvents() {
+    // Hover over an objective panel to see the highlighted nodes,
+    // and the description of it...
+    // TODO : On mobile, pointerdown also works
+    const o = this.objectivePanel;
+    o.on("pointerenter", () => {
+      for (const n of this.board.nodes) {
+        n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
+      }
+      for (const e of this.board.edges) {
+        if (o.type == "most-edges") {
+          e.alpha =
+            o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to)
+              ? 1
+              : 0.2;
+        } else {
+          e.alpha =
+            o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to)
+              ? 1
+              : 0.2;
+        }
+      }
+      for (const e of this.board.antiedges) {
+        e.visible = false;
+        if (o.type == "longest-antichain") {
+          e.visible =
+            o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to);
+        } else if (o.type == "most-antiedges") {
+          e.visible =
+            o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to);
+        }
+      }
+    });
+    o.on("pointerleave", () => {
+      for (const n of this.board.nodes) {
+        n.alpha = 1;
+      }
+      for (const e of this.board.edges) {
+        e.alpha = 1;
+      }
+      for (const e of this.board.antiedges) {
+        e.visible = false;
+      }
+    });
   }
 
   private showObscurer() {
