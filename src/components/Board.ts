@@ -429,4 +429,63 @@ export default class Board extends PIXI.Container {
     this.previousEdges = currentEdges;
     return numNew;
   }
+
+  getAction() {
+    const L = this.getL();
+    const L2 = this.multiply(L, L);
+
+    const N = this.nodes.length;
+    const N1 = this.count(1, L);
+    const N2 = this.count(1, L2);
+    const N3 = this.count(2, L2);
+
+    return N - 2 * N1 + 4 * N2 - 2 * N3;
+  }
+
+  count(needle: number, matrix: number[][]) {
+    let count = 0;
+    for (let i = 0; i < matrix.length; i++) {
+      for (let j = 0; j < matrix[i].length; j++) {
+        if (matrix[i][j] == needle) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  getL() {
+    const sortedPoints = _.sortBy(this.nodes, (n) => -n.y);
+    const matrix: number[][] = [];
+    for (const n1 of sortedPoints) {
+      const row = [];
+      for (const n2 of sortedPoints) {
+        if (n1.upConnections.indexOf(n2)) {
+          row.push(0);
+        } else {
+          row.push(1);
+        }
+      }
+      matrix.push(row);
+    }
+    return matrix;
+  }
+
+  multiply(a: number[][], b: number[][]) {
+    var aNumRows = a.length,
+      aNumCols = a[0].length,
+      bNumRows = b.length,
+      bNumCols = b[0].length,
+      m = new Array(aNumRows); // initialize array of rows
+    for (var r = 0; r < aNumRows; ++r) {
+      m[r] = new Array(bNumCols); // initialize the current row
+      for (var c = 0; c < bNumCols; ++c) {
+        m[r][c] = 0; // initialize the current cell
+        for (var i = 0; i < aNumCols; ++i) {
+          m[r][c] += a[r][i] * b[i][c];
+        }
+      }
+    }
+    return m;
+  }
 }

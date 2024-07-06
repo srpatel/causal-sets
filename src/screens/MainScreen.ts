@@ -362,6 +362,7 @@ export default class MainScreen extends Screen {
   private score: number = 0;
   private visibleScore: number = 0;
   private visibleMoney: number = 20;
+  private lblAction: PIXI.BitmapText;
   private lblScore: PIXI.BitmapText;
   private lblMoney: PIXI.BitmapText;
   private lblTitle: PIXI.BitmapText;
@@ -529,6 +530,11 @@ export default class MainScreen extends Screen {
           this.sharePanel.visible = true;
           this.sharePanel.alpha = 0;
           Actions.fadeIn(this.sharePanel, 0.2).play();
+
+          // Compute the action!
+          const action = this.board.getAction();
+          this.lblAction.text = "Action: " + action;
+          Actions.fadeIn(this.lblAction, 0.2).play();
         }
 
         if (step?.name == "PLACE_ON_BOARD") {
@@ -677,6 +683,16 @@ export default class MainScreen extends Screen {
     this.lblMoney.position.set(-20, 20);
     this.lblMoney.tint = Colour.DARK;
     this.moneyTriangle.addChild(this.lblMoney);
+
+    // Action (for end of game)
+    this.lblAction = new PIXI.BitmapText({
+      text: "Action: 57",
+      style: Font.makeFontOptions("medium"),
+    });
+    this.lblAction.anchor.set(0.5);
+    this.lblAction.tint = Colour.SPACETIME_BG;
+    this.lblAction.alpha = 0;
+    this.addChild(this.lblAction);
 
     // Buttons
     const b1 = new Button("btnagain", () => {
@@ -1006,6 +1022,11 @@ export default class MainScreen extends Screen {
       d.position.set(x, y2);
     }
     this.sharePanel.position.set(width / 2, height * 0.85);
+
+    this.lblAction.position.set(
+      width / 2,
+      (height * 0.85 + this.board.y + Diamond.HEIGHT * 4) / 2 - 20,
+    );
 
     if (this.selectedDiamond) {
       this.highlighter.position.set(
