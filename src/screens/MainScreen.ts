@@ -610,7 +610,6 @@ export default class MainScreen extends Screen {
       s.tint = Colour.SPACETIME_BG;
     }
 
-    this.addChild(this.board);
     this.addChild(this.highlighter);
     this.highlighter.scale.set(1.2);
     this.highlighter.visible = false;
@@ -724,6 +723,8 @@ export default class MainScreen extends Screen {
       this.advanceTutorial();
       e.stopPropagation();
     });
+
+    this.addChild(this.board);
 
     this.advanceTutorial();
   }

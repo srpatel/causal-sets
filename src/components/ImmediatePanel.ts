@@ -33,7 +33,7 @@ export default class ImmediatePanel extends PIXI.Container {
     sprite.scale.set(-1, 1);
     sprite.tint = Colour.DARK;
     sprite.x = 25;
-    sprite.y = -9;
+    sprite.y = 0;
     this.addChild(sprite);
 
     const lblCross = new PIXI.BitmapText({
@@ -45,7 +45,7 @@ export default class ImmediatePanel extends PIXI.Container {
       },
     });
     lblCross.anchor.set(0.5);
-    lblCross.position.set(0, -15);
+    lblCross.position.set(0, -4);
     lblCross.tint = Colour.DARK;
     this.addChild(lblCross);
 
@@ -58,7 +58,7 @@ export default class ImmediatePanel extends PIXI.Container {
       },
     });
     this.lblMultiplier.anchor.set(1, 0.5);
-    this.lblMultiplier.position.set(-15, -12);
+    this.lblMultiplier.position.set(-15, 0);
     this.lblMultiplier.tint = Colour.DARK;
     this.addChild(this.lblMultiplier);
 
@@ -72,7 +72,6 @@ export default class ImmediatePanel extends PIXI.Container {
     });
     this.updateText();
     this.lblDesc.anchor.set(0.5);
-    this.lblDesc.position.set(0, -9);
     this.lblDesc.tint = Colour.DARK;
     this.lblDesc.visible = false;
     this.addChild(this.lblDesc);

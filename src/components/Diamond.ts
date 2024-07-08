@@ -57,6 +57,23 @@ export default class Diamond extends PIXI.Container {
     this.points.push(node);
   }
 
+  static getScoreTypeDesc(st: ScoringType) {
+    if (st === "chain") {
+      return "Part of the longest chain";
+    } else if (st === "five") {
+      return "Four or more edges";
+    } else if (st === "two") {
+      return "Exactly two edges";
+    } else if (st === "maximal") {
+      return "Maximal element";
+    } else if (st === "minimal") {
+      return "Minimal element";
+    } else if (st === "post") {
+      return "Post";
+    }
+    return "";
+  }
+
   tutorialPoints(num: number) {
     // Clear all old points
     while (this.points.length > 0) {

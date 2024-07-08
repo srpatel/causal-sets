@@ -5,6 +5,7 @@ import Node from "@/components/Node";
 import Colour from "@/utils/Colour";
 import { Actions } from "pixi-actions";
 import Edge from "./Edge";
+import Font from "@/utils/Font";
 
 export default class Board extends PIXI.Container {
   dimension: number;
@@ -24,6 +25,8 @@ export default class Board extends PIXI.Container {
   edgesHolder = new PIXI.Container();
   antiedgesHolder = new PIXI.Container();
   coneHolder = new PIXI.Container();
+  infoPanel = new PIXI.Container();
+  infoDesc: PIXI.BitmapText;
   coneGraphics = new PIXI.Graphics();
   previousEdges: [Node, Node][] = [];
   animated = false;
@@ -101,6 +104,20 @@ export default class Board extends PIXI.Container {
     this.potentialDiamond.alpha = 0.5;
     this.background.addChild(this.potentialDiamond);
     this.potentialDiamond.visible = false;
+
+    const panel = PIXI.Sprite.from("infopanelbordered.png");
+    panel.anchor.set(0.5);
+    this.infoPanel.addChild(panel);
+    this.infoPanel.visible = false;
+    this.infoDesc = new PIXI.BitmapText({
+      text: "",
+      style: Font.makeFontOptions("small"),
+    });
+    this.infoDesc.anchor.set(0.5);
+    this.infoDesc.position.set(0, -10);
+    this.infoDesc.tint = Colour.DARK;
+    this.infoPanel.addChild(this.infoDesc);
+    this.addChild(this.infoPanel);
   }
 
   setPotential(diamond: Diamond) {
@@ -193,9 +210,18 @@ export default class Board extends PIXI.Container {
       p.eventMode = "static";
       p.on("pointerenter", () => {
         this.setConeForNode(p);
+
+        // If scoring node, show scoring information
+        if (p.type != "normal") {
+          // Show info thingy.
+          this.infoPanel.visible = true;
+          this.infoPanel.position.set(p.x, p.y - 42);
+          this.infoDesc.text = Diamond.getScoreTypeDesc(p.type);
+        }
       });
       p.on("pointerleave", () => {
         this.setConeForNode(null);
+        this.infoPanel.visible = false;
       });
     }
 
