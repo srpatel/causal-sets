@@ -53,7 +53,7 @@ export default class MainScreen extends Screen {
     },
     {
       name: "SELECT_TILE",
-      message: "Select this tile",
+      message: "Select this tile.\nIt costs 1 Energy.",
       messagePosition: {
         attachTo: () => this.diamonds[2],
         placement: "above",
@@ -92,6 +92,8 @@ export default class MainScreen extends Screen {
       action: () => {
         this.immediatePanel.target = 3;
         this.immediatePanel.updateText();
+        this.immediatePanel.possibleTargets = [];
+        this.immediatePanel.target;
         this.immediatePanel.visible = true;
         this.immediatePanel.alpha = 0;
         Actions.fadeIn(this.immediatePanel, 0.2).play();
@@ -506,6 +508,9 @@ export default class MainScreen extends Screen {
         this.immediatePanel.madeConnections(numNewEdges);
         this.updateScore();
 
+        const action = this.board.getAction();
+        this.lblAction.text = "Action: " + action;
+
         // Is the game over?
         if (
           this.money <= 0 ||
@@ -530,11 +535,6 @@ export default class MainScreen extends Screen {
           this.sharePanel.visible = true;
           this.sharePanel.alpha = 0;
           Actions.fadeIn(this.sharePanel, 0.2).play();
-
-          // Compute the action!
-          const action = this.board.getAction();
-          this.lblAction.text = "Action: " + action;
-          Actions.fadeIn(this.lblAction, 0.2).play();
         }
 
         if (step?.name == "PLACE_ON_BOARD") {
@@ -686,12 +686,12 @@ export default class MainScreen extends Screen {
 
     // Action (for end of game)
     this.lblAction = new PIXI.BitmapText({
-      text: "Action: 57",
-      style: Font.makeFontOptions("medium"),
+      text: "Action: 0",
+      style: Font.makeFontOptions("small"),
     });
     this.lblAction.anchor.set(0.5);
     this.lblAction.tint = Colour.SPACETIME_BG;
-    this.lblAction.alpha = 0;
+    this.lblAction.alpha = 0.2;
     this.addChild(this.lblAction);
 
     // Buttons
@@ -1023,10 +1023,7 @@ export default class MainScreen extends Screen {
     }
     this.sharePanel.position.set(width / 2, height * 0.85);
 
-    this.lblAction.position.set(
-      width / 2,
-      (height * 0.85 + this.board.y + Diamond.HEIGHT * 4) / 2 - 20,
-    );
+    this.lblAction.position.set(width / 2, height - this.lblAction.height);
 
     if (this.selectedDiamond) {
       this.highlighter.position.set(

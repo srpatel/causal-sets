@@ -84,6 +84,7 @@ export default class ImmediatePanel extends PIXI.Container {
     this.lblPoints.anchor.set(0.5, 1);
     this.lblPoints.position.set(0, 150 / 2 + 15);
     this.lblPoints.tint = Colour.DARK;
+    this.lblPoints.visible = false;
     this.addChild(this.lblPoints);
 
     this.on("pointerenter", () => {
@@ -127,12 +128,14 @@ export default class ImmediatePanel extends PIXI.Container {
   madeConnections(num: number) {
     if (this.target == num || (this.target <= num && this.target == 5)) {
       this.target = this.randomTarget();
-      this.updateText();
       this.points += 3;
       this.lblPoints.text = "" + this.points;
       Actions.sequence(
         Actions.tintTo(this.background, 0x06aa22, 0.2),
         Actions.tintTo(this.background, Colour.SPACETIME_BG, 0.2),
+        Actions.runFunc(() => {
+          this.updateText();
+        }),
       ).play();
     }
   }
