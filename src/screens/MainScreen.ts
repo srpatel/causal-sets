@@ -19,6 +19,7 @@ import MessagePanel from "@/components/MessagePanel";
 import Obscurer from "@/components/Obscurer";
 import FirstTimeModal from "./FirstTimeModal";
 import TextWisp from "@/utils/TextWisp";
+import TintTo from "@/utils/TintTo";
 export default class MainScreen extends Screen {
   private tutorialMode: boolean;
   private tutorialStep: number = -1;
@@ -478,7 +479,7 @@ export default class MainScreen extends Screen {
         // Place this diamond ontop of the board in the right place.
         this.selectedDiamond.position.set(d.x, d.y);
         this.selectedDiamond.coords = [...d.coords];
-        const { didAdd, numNewEdges } = this.board.addDiamond(
+        const { didAdd, newEdges } = this.board.addDiamond(
           this.selectedDiamond,
         );
         if (!didAdd) {
@@ -486,6 +487,7 @@ export default class MainScreen extends Screen {
         }
 
         const addedDiamond = this.selectedDiamond;
+        const numNewEdges = newEdges.length;
 
         this.money -= cost;
 
@@ -516,6 +518,13 @@ export default class MainScreen extends Screen {
             "+3",
             Colour.DARK,
           );
+          for (const e of newEdges) {
+            const oldTint = e.tint;
+            Actions.sequence(
+              new TintTo(e, 0x06aa22, 0.2),
+              new TintTo(e, oldTint, 0.2),
+            ).play();
+          }
         }
         this.updateScore();
 

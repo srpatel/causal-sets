@@ -227,10 +227,10 @@ export default class Board extends PIXI.Container {
     }
 
     if (!andRecalculate) {
-      return { didAdd: true, numNewEdges: 0 };
+      return { didAdd: true, newEdges: [] };
     }
 
-    const numNewEdges = this.drawEdges();
+    const newEdges = this.drawEdges();
 
     // Update scoring of nodes!
     for (const node of this.nodes) {
@@ -259,7 +259,7 @@ export default class Board extends PIXI.Container {
         TextWisp.makeWisp(this, node.x, node.y - 25, "+5", Colour.DARK);
       }
     }
-    return { didAdd: true, numNewEdges };
+    return { didAdd: true, newEdges };
   }
 
   setConeForNode(n: Node) {
@@ -325,7 +325,7 @@ export default class Board extends PIXI.Container {
 
   drawEdges() {
     const currentEdges: [Node, Node][] = [];
-    let numNew = 0;
+    const newEdges = [];
     this.edgesHolder.removeChildren();
     this.antiedgesHolder.removeChildren();
     this.roots = [];
@@ -432,7 +432,7 @@ export default class Board extends PIXI.Container {
                 }
               }
               if (!found) {
-                numNew++;
+                newEdges.push(edge);
                 if (this.animated) {
                   edge.alpha = 0;
                   Actions.fadeIn(edge, 0.8).play();
@@ -459,7 +459,7 @@ export default class Board extends PIXI.Container {
     }
 
     this.previousEdges = currentEdges;
-    return numNew;
+    return newEdges;
   }
 
   getAction() {

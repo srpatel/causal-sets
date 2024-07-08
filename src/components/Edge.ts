@@ -13,9 +13,11 @@ export default class Edge extends PIXI.Graphics {
 
     this.setStrokeStyle({
       width: thickness,
-      color: anti ? 0xcc0000 : Colour.DARK,
+      color: 0xffffff,
     });
 
     this.moveTo(from.x, from.y).lineTo(to.x, to.y).stroke();
+
+    this.tint = anti ? 0xcc0000 : Colour.DARK;
   }
 }
