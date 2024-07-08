@@ -6,6 +6,7 @@ import Colour from "@/utils/Colour";
 import { Actions } from "pixi-actions";
 import Edge from "./Edge";
 import Font from "@/utils/Font";
+import TextWisp from "@/utils/TextWisp";
 
 export default class Board extends PIXI.Container {
   dimension: number;
@@ -236,6 +237,7 @@ export default class Board extends PIXI.Container {
       if (node.type == "normal") {
         continue;
       }
+      const wasScoring = node.scoring;
       node.scoring = false;
       if (node.type == "maximal") {
         node.scoring = node.upConnections.length == 0;
@@ -251,6 +253,10 @@ export default class Board extends PIXI.Container {
         node.scoring = node.numConnections() == 2;
       } else if (node.type == "chain") {
         // ??? part of a longest chain?
+      }
+      if (!wasScoring && node.scoring) {
+        // We are now scoring!
+        TextWisp.makeWisp(this, node.x, node.y - 25, "+5", Colour.DARK);
       }
     }
     return { didAdd: true, numNewEdges };

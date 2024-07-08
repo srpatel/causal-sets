@@ -18,6 +18,7 @@ import Modal from "./Modal";
 import MessagePanel from "@/components/MessagePanel";
 import Obscurer from "@/components/Obscurer";
 import FirstTimeModal from "./FirstTimeModal";
+import TextWisp from "@/utils/TextWisp";
 export default class MainScreen extends Screen {
   private tutorialMode: boolean;
   private tutorialStep: number = -1;
@@ -484,6 +485,8 @@ export default class MainScreen extends Screen {
           return;
         }
 
+        const addedDiamond = this.selectedDiamond;
+
         this.money -= cost;
 
         this.diamonds[index] = null;
@@ -505,7 +508,15 @@ export default class MainScreen extends Screen {
 
         // Update score
         //this.edgeScore += numNewEdges;
-        this.immediatePanel.madeConnections(numNewEdges);
+        if (this.immediatePanel.madeConnections(numNewEdges)) {
+          TextWisp.makeWisp(
+            this.board,
+            addedDiamond.x,
+            addedDiamond.y - Diamond.HEIGHT + 20,
+            "+3",
+            Colour.DARK,
+          );
+        }
         this.updateScore();
 
         const action = this.board.getAction();

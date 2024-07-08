@@ -136,6 +136,8 @@ export default class ImmediatePanel extends PIXI.Container {
           this.updateText();
         }),
       ).play();
+      return true;
     }
+    return false;
   }
 }
