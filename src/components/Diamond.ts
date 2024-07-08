@@ -77,6 +77,7 @@ export default class Diamond extends PIXI.Container {
       points = [[30, -15]];
     } else if (num == 3) {
       points = [
+        [14, -40],
         [10, -25],
         [-5, 50],
       ];
