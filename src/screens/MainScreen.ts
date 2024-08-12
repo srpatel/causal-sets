@@ -85,6 +85,16 @@ export default class MainScreen extends Screen {
         );
       },
     },
+    /*{
+      // How to fix... we need a way to allow hovering when the tutorial "tap to continue" is up
+      name: "MESSAGE",
+      message: "You can hover over any node to see its light-cone.",
+      tapToContinue: true,
+      highlight: () => this.board.nodes[this.board.nodes.length - 1],
+      action: () => {
+        this.board.setConeForNode(null);
+      },
+    },*/
     {
       name: "MESSAGE",
       message:
