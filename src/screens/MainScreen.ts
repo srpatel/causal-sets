@@ -938,7 +938,8 @@ export default class MainScreen extends Screen {
           const step = this.getTutorialStep();
           if (
             step?.name == "PLACE_ON_BOARD" ||
-            step?.name == "PLACE_ON_BOARD_TEST"
+            step?.name == "PLACE_ON_BOARD_TEST" ||
+            step?.name == "PLACE_ON_BOARD_TEST2"
           ) {
             return;
           }
