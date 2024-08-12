@@ -88,7 +88,7 @@ export default class MainScreen extends Screen {
     {
       name: "MESSAGE",
       message:
-        "This is an objective.\n\nIf you create a specific number of edges with a new tile, you get bonus points.",
+        "This is an objective.\n\nEach time you create the specific number of edges with a new tile, you get 3 bonus points.",
       tapToContinue: true,
       highlight: () => this.immediatePanel,
       action: () => {
@@ -156,7 +156,8 @@ export default class MainScreen extends Screen {
     },
     {
       name: "SUCCESS",
-      message: "Nice job!\nYou made exactly three edges!",
+      message:
+        "Nice job!\nYou made exactly three edges and got 3 bonus points!",
       messagePosition: {
         attachTo: () => this.diamonds[1],
         placement: "above",
@@ -229,7 +230,8 @@ export default class MainScreen extends Screen {
     },
     {
       name: "SUCCESS2",
-      message: "Nice job!\nA maximal element has no upwards edges!",
+      message:
+        "Nice job!\nA maximal element has no upwards edges.\nIt will continue to be worth 5 points as long as it remains a maximal element.",
       messagePosition: {
         attachTo: () => this.diamonds[1],
         placement: "above",
@@ -269,8 +271,22 @@ export default class MainScreen extends Screen {
       highlight: () => this.objectivePanel,
     },
     {
+      name: "MESSAGE",
+      message:
+        "It's currently worth N points because the longest chain has N nodes.",
+      action: () => {
+        let message =
+          "It's currently worth ${N} points because the longest chain has ${N} nodes.";
+        message = message.replace(/\$\{N\}/g, this.objectivePanel.points + "");
+        const step = this.getTutorialStep();
+        step.message = message;
+      },
+      tapToContinue: true,
+      highlight: () => this.objectivePanel,
+    },
+    {
       name: "PLACE_ON_BOARD_TEST3",
-      message: "Try to get it up to 5 points with your next tile!",
+      message: "Try to make a chain of 5 nodes with your next tile!",
       messagePosition: {
         attachTo: () => this.diamonds[1],
         placement: "above",
@@ -682,7 +698,10 @@ export default class MainScreen extends Screen {
       label.anchor.set(0.5);
       label.position.set(12, 65);
       label.tint = Colour.DARK;
+      this.scoreTriangle.eventMode = "static";
       this.scoreTriangle.addChild(label);
+
+      this.setupScoreTriangle();
     }
     // Update scoring recalculates all of them.
     this.lblScore = new PIXI.BitmapText({
@@ -759,7 +778,11 @@ export default class MainScreen extends Screen {
         n.alpha = o.highlightNodes.has(n) ? 1 : 0.2;
       }
       for (const e of this.board.edges) {
-        if (o.type == "most-edges") {
+        if (o.type == "most-antiedges") {
+          e.alpha = 0.2;
+        } else if (o.type == "longest-antichain") {
+          e.alpha = 0.2;
+        } else if (o.type == "most-edges") {
           e.alpha =
             o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to)
               ? 1
@@ -773,13 +796,13 @@ export default class MainScreen extends Screen {
       }
       for (const e of this.board.antiedges) {
         e.visible = false;
-        if (o.type == "longest-antichain") {
+        /*if (o.type == "longest-antichain") {
           e.visible =
             o.highlightNodes.has(e.from) && o.highlightNodes.has(e.to);
         } else if (o.type == "most-antiedges") {
           e.visible =
             o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to);
-        }
+        }*/
       }
     });
     o.on("pointerleave", () => {
@@ -791,6 +814,64 @@ export default class MainScreen extends Screen {
       }
       for (const e of this.board.antiedges) {
         e.visible = false;
+      }
+    });
+  }
+
+  setupScoreTriangle() {
+    const o = this.scoreTriangle;
+    o.on("pointerenter", () => {
+      if (this.immediatePanel) {
+        this.immediatePanel.lblPoints.tint = Colour.HIGHLIGHT;
+        this.immediatePanel.lblPoints.scale.set(1.2);
+      }
+      if (this.objectivePanel) {
+        this.objectivePanel.lblPoints.tint = Colour.HIGHLIGHT;
+        this.objectivePanel.lblPoints.scale.set(1.2);
+      }
+      // Highlight objectives and objective nodes only
+      this.moneyTriangle.alpha = 0.2;
+      this.highlighter.visible = false;
+      this.infoPanel.visible = false;
+      for (const n of this.diamonds) {
+        if (n) n.alpha = 0.2;
+      }
+      for (const n of this.diamondCosts) {
+        if (n) n.alpha = 0.2;
+      }
+      for (const n of this.board.nodes) {
+        n.alpha = n.scoring ? 1 : 0.2;
+        if (n.scoring) n.scale.set(1.2);
+      }
+      for (const e of this.board.edges) {
+        e.alpha = 0.2;
+      }
+    });
+    o.on("pointerleave", () => {
+      if (this.immediatePanel) {
+        this.immediatePanel.lblPoints.tint = Colour.DARK;
+        this.immediatePanel.lblPoints.scale.set(1);
+      }
+      if (this.objectivePanel) {
+        this.objectivePanel.lblPoints.tint = Colour.DARK;
+        this.objectivePanel.lblPoints.scale.set(1);
+      }
+      // Everything ok again!
+      this.moneyTriangle.alpha = 1;
+      this.highlighter.visible = true;
+      this.infoPanel.visible = this.selectedDiamond == this.diamonds[0];
+      for (const n of this.diamonds) {
+        if (n) n.alpha = 1;
+      }
+      for (const n of this.diamondCosts) {
+        if (n) n.alpha = 1;
+      }
+      for (const n of this.board.nodes) {
+        n.alpha = 1;
+        n.scale.set(1);
+      }
+      for (const e of this.board.edges) {
+        e.alpha = 1;
       }
     });
   }
@@ -830,6 +911,13 @@ export default class MainScreen extends Screen {
       return;
     }
     const step = this.getTutorialStep();
+    if (step?.highlight) {
+      // Add the obscurer
+      this.showObscurer();
+    }
+    if (step?.action) {
+      step.action();
+    }
     if (step?.message) {
       // Add a message box to the middle of the screen...
       const panel = new MessagePanel(
@@ -844,13 +932,6 @@ export default class MainScreen extends Screen {
       if (step.tapToContinue) {
         this.obscurer.eventMode = "static";
       }
-    }
-    if (step?.highlight) {
-      // Add the obscurer
-      this.showObscurer();
-    }
-    if (step?.action) {
-      step.action();
     }
     this.onSizeChanged();
   }

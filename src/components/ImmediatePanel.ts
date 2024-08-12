@@ -10,7 +10,7 @@ export default class ImmediatePanel extends PIXI.Container {
   background: PIXI.Sprite;
   private lblDesc: PIXI.BitmapText;
   private lblMultiplier: PIXI.BitmapText;
-  private lblPoints: PIXI.BitmapText;
+  lblPoints: PIXI.BitmapText;
   target: number;
   highlightNodes: Set<Node> = new Set<Node>();
   points: number = 0;
@@ -83,7 +83,6 @@ export default class ImmediatePanel extends PIXI.Container {
     this.lblPoints.anchor.set(0.5, 1);
     this.lblPoints.position.set(0, 150 / 2 + 15);
     this.lblPoints.tint = Colour.DARK;
-    this.lblPoints.visible = false;
     this.addChild(this.lblPoints);
 
     this.on("pointerenter", () => {

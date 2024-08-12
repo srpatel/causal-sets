@@ -19,7 +19,7 @@ export function getRandomObjective() {
     "longest-chain",
     "longest-antichain",
     "most-edges",
-    "most-antiedges",
+    /*"most-antiedges",*/
     "one-past",
     "one-future",
   ];
@@ -29,7 +29,7 @@ export function getRandomObjective() {
 export default class ObjectivePanel extends PIXI.Container {
   private background: PIXI.Sprite;
   private lblDesc: PIXI.BitmapText;
-  private lblPoints: PIXI.BitmapText;
+  lblPoints: PIXI.BitmapText;
   private sprite: PIXI.Sprite;
   type: ObjectiveType;
   highlightNodes: Set<Node> = new Set<Node>();
@@ -220,7 +220,24 @@ export default class ObjectivePanel extends PIXI.Container {
         }
       }
       this.highlightNodes.clear();
-      this.highlightNodes.add(node);
+      if (node) {
+        this.highlightNodes.add(node);
+        if (this.type == "most-edges") {
+          for (const n of node.upConnections) {
+            this.highlightNodes.add(n);
+          }
+          for (const n of node.downConnections) {
+            this.highlightNodes.add(n);
+          }
+        } else {
+          for (const n of node.leftConnections) {
+            this.highlightNodes.add(n);
+          }
+          for (const n of node.rightConnections) {
+            this.highlightNodes.add(n);
+          }
+        }
+      }
       this.points = numConnections;
     }
 
