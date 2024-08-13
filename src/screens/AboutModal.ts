@@ -5,9 +5,6 @@ import App from "@/App";
 import MainScreen from "./MainScreen";
 import Font from "@/utils/Font";
 import Colour from "@/utils/Colour";
-import Board from "@/components/Board";
-import { Actions } from "pixi-actions";
-import Definition from "./glossary/Definition";
 import Page from "./glossary/Page";
 
 export default class AboutModal extends Modal {

@@ -758,6 +758,12 @@ export default class MainScreen extends Screen {
         }),
       ).play();
     });
+    const lblCopied = new PIXI.BitmapText({
+      text: "Copied!",
+      style: Font.makeFontOptions("small"),
+    });
+    lblCopied.anchor.set(0.5);
+    lblCopied.tint = Colour.SPACETIME_BG;
     const b2 = new Button("btnshare", () => {
       // TODO:
       // Copy to clipboard: "Causal Sets Game. Score: 20. Link."
@@ -776,11 +782,23 @@ export default class MainScreen extends Screen {
         JSON.stringify(state),
       )}`;
       const shareText = `Causal Sets Game\nScore: ${this.score}\n${link}`;
-      navigator.clipboard.writeText(shareText);
+      navigator.clipboard
+        .writeText(shareText)
+        .then(() => {
+          b2.visible = false;
+        })
+        .catch(() => {
+          lblCopied.text = "Error";
+          lblCopied.tint = Colour.HIGHLIGHT;
+          b2.visible = false;
+        });
     });
+
     b1.position.set(-125, 0);
     b2.position.set(125, 0);
+    lblCopied.position.set(125, 0);
     this.sharePanel.addChild(b1);
+    this.sharePanel.addChild(lblCopied);
     this.sharePanel.addChild(b2);
     this.addChild(this.sharePanel);
     this.sharePanel.visible = false;
@@ -1021,10 +1039,6 @@ export default class MainScreen extends Screen {
     if (!this.tutorialMode) return;
     this.tutorialStep++;
     this.processTutorial();
-  }
-  private advanceTutorialIf(stepName: string) {
-    const step = this.getTutorialStep();
-    if (step?.name == stepName) this.advanceTutorial();
   }
   private processTutorial() {
     this.obscurer.eventMode = "none";
