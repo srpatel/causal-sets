@@ -794,7 +794,8 @@ export default class MainScreen extends Screen {
           e.alpha = 0.2;
         } else if (o.type == "most-edges") {
           e.alpha =
-            o.highlightNodes.has(e.from) || o.highlightNodes.has(e.to)
+            o.mainHighlightNode &&
+            (o.mainHighlightNode == e.from || o.mainHighlightNode == e.to)
               ? 1
               : 0.2;
         } else {

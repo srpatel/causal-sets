@@ -33,6 +33,7 @@ export default class ObjectivePanel extends PIXI.Container {
   private sprite: PIXI.Sprite;
   type: ObjectiveType;
   highlightNodes: Set<Node> = new Set<Node>();
+  mainHighlightNode: Node = null;
   points: number = 0;
   constructor(type: ObjectiveType) {
     super();
@@ -119,6 +120,7 @@ export default class ObjectivePanel extends PIXI.Container {
       // longest chain...
       let num = 0;
       this.highlightNodes.clear();
+      this.mainHighlightNode = null;
       const roots =
         this.type == "longest-chain" ? board.roots : board.antiroots;
       for (const r of roots) {
@@ -222,6 +224,7 @@ export default class ObjectivePanel extends PIXI.Container {
       this.highlightNodes.clear();
       if (node) {
         this.highlightNodes.add(node);
+        this.mainHighlightNode = node;
         if (this.type == "most-edges") {
           for (const n of node.upConnections) {
             this.highlightNodes.add(n);
