@@ -17,10 +17,10 @@ import ImmediatePanel from "@/components/ImmediatePanel";
 import Modal from "./Modal";
 import MessagePanel from "@/components/MessagePanel";
 import Obscurer from "@/components/Obscurer";
-import FirstTimeModal from "./FirstTimeModal";
 import TextWisp from "@/utils/TextWisp";
 import TintTo from "@/utils/TintTo";
 import GlossaryModal from "./GlossaryModal";
+import AboutModal from "./AboutModal";
 export default class MainScreen extends Screen {
   private tutorialMode: boolean;
   private tutorialStep: number = -1;
@@ -440,7 +440,7 @@ export default class MainScreen extends Screen {
     this.sprAbout.eventMode = "static";
     this.sprAbout.cursor = "pointer";
     this.sprAbout.on("pointerdown", () => {
-      App.instance.addModal(new Modal());
+      App.instance.addModal(new AboutModal());
     });
     this.addChild(this.sprAbout);
 
