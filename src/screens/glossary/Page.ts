@@ -10,7 +10,7 @@ export default class Page extends PIXI.Container {
     let y = 0;
     for (const d of defns) {
       d.position.set(-250, y);
-      y += 200;
+      y += d.height + 50;
       this.addChild(d);
     }
   }

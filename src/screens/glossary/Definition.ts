@@ -15,9 +15,6 @@ export default class Definition extends PIXI.Container {
 
     this.icon = PIXI.Sprite.from(icon);
     this.icon.anchor.set(0.5, 0);
-    if (!icon.startsWith("glossary-") && !icon.startsWith("node-")) {
-      this.icon.tint = Colour.SPACETIME_BG;
-    }
     this.addChild(this.icon);
 
     this.lblName = new PIXI.BitmapText({
