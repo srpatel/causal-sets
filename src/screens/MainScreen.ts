@@ -20,6 +20,7 @@ import Obscurer from "@/components/Obscurer";
 import FirstTimeModal from "./FirstTimeModal";
 import TextWisp from "@/utils/TextWisp";
 import TintTo from "@/utils/TintTo";
+import GlossaryModal from "./GlossaryModal";
 export default class MainScreen extends Screen {
   private tutorialMode: boolean;
   private tutorialStep: number = -1;
@@ -430,9 +431,9 @@ export default class MainScreen extends Screen {
     this.sprRules.eventMode = "static";
     this.sprRules.cursor = "pointer";
     this.sprRules.on("pointerdown", () => {
-      App.instance.addModal(new FirstTimeModal());
+      App.instance.addModal(new GlossaryModal());
     });
-    //this.addChild(this.sprRules);
+    this.addChild(this.sprRules);
     this.sprAbout = PIXI.Sprite.from("science.png");
     this.sprAbout.anchor.set(0.5);
     this.sprAbout.tint = Colour.SPACETIME_BG;
