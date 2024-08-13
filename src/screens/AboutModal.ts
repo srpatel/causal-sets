@@ -19,6 +19,7 @@ export default class AboutModal extends Modal {
   currentPage: number = 0;
   circles: PIXI.Sprite[] = [];
   b1: Button;
+  b2: Button;
   constructor() {
     super(true);
 
@@ -26,7 +27,7 @@ export default class AboutModal extends Modal {
 
     this.panel.eventMode = "static";
     this.panel.width = 400;
-    this.panel.height = 380;
+    this.panel.height = 450;
 
     this.undertitle = new PIXI.BitmapText({
       text: "[ Tap to close ]",
@@ -74,6 +75,12 @@ export default class AboutModal extends Modal {
 
     this.b1 = new Button("btnvideo", () => {});
     this.addChild(this.b1);
+
+    this.b2 = new Button("btntutorial", () => {
+      App.instance.popModal();
+      App.instance.setScreen(new MainScreen(true));
+    });
+    this.addChild(this.b2);
   }
 
   onSizeChanged(): void {
@@ -89,6 +96,10 @@ export default class AboutModal extends Modal {
     this.b1.position.set(
       this.panel.x + this.panel.width / 2,
       this.panel.y + 250,
+    );
+    this.b2.position.set(
+      this.panel.x + this.panel.width / 2,
+      this.panel.y + 330,
     );
     this.subtitle2.position.set(
       this.panel.x + this.panel.width / 2,

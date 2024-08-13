@@ -1262,10 +1262,12 @@ export default class MainScreen extends Screen {
       );
     }
 
-    this.infoPanel.position.set(
-      this.diamonds[0].x,
-      this.diamonds[0].y - Diamond.HEIGHT - 45,
-    );
+    if (this.diamonds[0] != null) {
+      this.infoPanel.position.set(
+        this.diamonds[0].x,
+        this.diamonds[0].y - Diamond.HEIGHT - 45,
+      );
+    }
 
     if (this.tutorialMessage) {
       const step = this.tutorialSteps[this.tutorialStep];
