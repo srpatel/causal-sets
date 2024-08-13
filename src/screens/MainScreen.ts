@@ -8,7 +8,7 @@ import ObjectivePanel, {
   getRandomObjective,
 } from "@/components/ObjectivePanel";
 import Font from "@/utils/Font";
-import { ScoringType } from "@/components/Node";
+import Node, { ScoringType } from "@/components/Node";
 import Colour from "@/utils/Colour";
 import { Actions } from "pixi-actions";
 import Button from "@/components/Button";
@@ -106,7 +106,6 @@ export default class MainScreen extends Screen {
         this.immediatePanel.target = 3;
         this.immediatePanel.updateText();
         this.immediatePanel.possibleTargets = [];
-        this.immediatePanel.target;
         this.immediatePanel.visible = true;
         this.immediatePanel.alpha = 0;
         Actions.fadeIn(this.immediatePanel, 0.2).play();
@@ -365,6 +364,7 @@ export default class MainScreen extends Screen {
       highlight: () => this.sprAbout,
     },
   ];
+  private gameOver = false;
   private obscurer = new Obscurer();
   private diamonds: Diamond[] = [null, null, null];
   private infoPanel = new PIXI.Container();
@@ -393,6 +393,7 @@ export default class MainScreen extends Screen {
   private score: number = 0;
   private visibleScore: number = 0;
   private visibleMoney: number = 20;
+  private action = 0;
   private lblAction: PIXI.BitmapText;
   private lblScore: PIXI.BitmapText;
   private lblMoney: PIXI.BitmapText;
@@ -458,6 +459,7 @@ export default class MainScreen extends Screen {
     this.infoPanel.addChild(this.infoDesc);
 
     this.board = new Board(4, (d: Diamond) => {
+      if (this.gameOver) return;
       if (this.selectedDiamond) {
         const index = this.diamonds.indexOf(this.selectedDiamond);
         if (index < 0) {
@@ -555,8 +557,8 @@ export default class MainScreen extends Screen {
         }
         this.updateScore();
 
-        const action = this.board.getAction();
-        this.lblAction.text = "Action: " + action;
+        this.action = this.board.getAction();
+        this.lblAction.text = "Action: " + this.action;
 
         // Is the game over?
         if (
@@ -579,6 +581,7 @@ export default class MainScreen extends Screen {
             }
           }
           // 3. Fade in share panel
+          this.gameOver = true;
           this.sharePanel.visible = true;
           this.sharePanel.alpha = 0;
           Actions.fadeIn(this.sharePanel, 0.2).play();
@@ -758,6 +761,22 @@ export default class MainScreen extends Screen {
     const b2 = new Button("btnshare", () => {
       // TODO:
       // Copy to clipboard: "Causal Sets Game. Score: 20. Link."
+      // state encodes: energy, score, left obj, right obj, action, node positions
+      const state = {
+        s: this.score,
+        e: this.money,
+        l: this.objectivePanel?.points ?? 0,
+        r: this.immediatePanel?.points ?? 0,
+        ll: this.objectivePanel?.type,
+        rr: this.immediatePanel?.target,
+        a: this.action,
+        n: this.board.nodes.map((n) => [n.x, n.y, n.type]),
+      };
+      const link = `http://localhost:5173/?state=${this.stringToBase64(
+        JSON.stringify(state),
+      )}`;
+      const shareText = `Causal Sets Game\nScore: ${this.score}\n${link}`;
+      navigator.clipboard.writeText(shareText);
     });
     b1.position.set(-125, 0);
     b2.position.set(125, 0);
@@ -777,6 +796,97 @@ export default class MainScreen extends Screen {
     this.addChild(this.board);
 
     this.advanceTutorial();
+  }
+
+  loadState(base64: string) {
+    try {
+      const state = JSON.parse(this.base64ToString(base64));
+      console.log(state);
+      this.gameOver = true;
+
+      // Add all background pieces
+      this.board.addBlanks();
+
+      // Add all nodes
+      for (const n of state.n) {
+        const p = new Node(n[2]);
+        p.x = n[0];
+        p.y = n[1];
+
+        this.board.nodes.push(p);
+        this.board.nodesHolder.addChild(p);
+
+        p.cursor = "pointer";
+        p.eventMode = "static";
+        p.on("pointerenter", () => {
+          this.board.setConeForNode(p);
+
+          // If scoring node, show scoring information
+          if (p.type != "normal") {
+            // Show info thingy.
+            this.infoPanel.visible = true;
+            this.infoPanel.position.set(p.x, p.y - 42);
+            this.infoDesc.text = Diamond.getScoreTypeDesc(p.type);
+          }
+        });
+        p.on("pointerleave", () => {
+          this.board.setConeForNode(null);
+          this.infoPanel.visible = false;
+        });
+      }
+      this.board.drawEdges();
+      this.board.checkScoringNodes();
+
+      this.score = state.s;
+      this.money = state.e;
+      this.action = state.a;
+      this.lblScore.text = "" + this.score;
+      this.lblMoney.text = "" + this.money;
+      this.lblAction.text = "Action: " + this.action;
+      if (state.ll) {
+        this.objectivePanel.removeFromParent();
+        const o = new ObjectivePanel(state.ll);
+        this.objectivePanel = o;
+        o.calculate(this.board);
+        this.objectivePanel.lblPoints.text = state.l;
+        this.addChild(o);
+        this.setupObjectiveEvents();
+      }
+      if (state.rr) {
+        this.immediatePanel.target = state.rr;
+        this.immediatePanel.updateText();
+        this.immediatePanel.lblPoints.text = state.r;
+      }
+
+      for (let i = 0; i < 3; i++) {
+        if (this.diamonds[i]) {
+          this.diamonds[i].removeFromParent();
+          this.diamonds[i] = null;
+        }
+        if (this.diamondCosts[i]) {
+          this.diamondCosts[i].removeFromParent();
+        }
+      }
+      this.highlighter.visible = false;
+
+      this.gameOver = true;
+      this.sharePanel.visible = true;
+      this.sharePanel.alpha = 1;
+    } catch (e) {}
+  }
+
+  base64ToString(base64: string) {
+    const binString = atob(base64);
+    const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+
+  stringToBase64(input: string) {
+    const bytes = new TextEncoder().encode(input);
+    const binString = Array.from(bytes, (byte) =>
+      String.fromCodePoint(byte),
+    ).join("");
+    return btoa(binString);
   }
 
   setupObjectiveEvents() {
@@ -843,13 +953,15 @@ export default class MainScreen extends Screen {
       }
       // Highlight objectives and objective nodes only
       this.moneyTriangle.alpha = 0.2;
-      this.highlighter.visible = false;
-      this.infoPanel.visible = false;
-      for (const n of this.diamonds) {
-        if (n) n.alpha = 0.2;
-      }
-      for (const n of this.diamondCosts) {
-        if (n) n.alpha = 0.2;
+      if (!this.gameOver) {
+        this.highlighter.visible = false;
+        this.infoPanel.visible = false;
+        for (const n of this.diamonds) {
+          if (n) n.alpha = 0.2;
+        }
+        for (const n of this.diamondCosts) {
+          if (n) n.alpha = 0.2;
+        }
       }
       for (const n of this.board.nodes) {
         n.alpha = n.scoring ? 1 : 0.2;
@@ -870,13 +982,16 @@ export default class MainScreen extends Screen {
       }
       // Everything ok again!
       this.moneyTriangle.alpha = 1;
-      this.highlighter.visible = true;
-      this.infoPanel.visible = this.selectedDiamond == this.diamonds[0];
-      for (const n of this.diamonds) {
-        if (n) n.alpha = 1;
-      }
-      for (const n of this.diamondCosts) {
-        if (n) n.alpha = 1;
+
+      if (!this.gameOver) {
+        this.highlighter.visible = true;
+        this.infoPanel.visible = this.selectedDiamond == this.diamonds[0];
+        for (const n of this.diamonds) {
+          if (n) n.alpha = 1;
+        }
+        for (const n of this.diamondCosts) {
+          if (n) n.alpha = 1;
+        }
       }
       for (const n of this.board.nodes) {
         n.alpha = 1;

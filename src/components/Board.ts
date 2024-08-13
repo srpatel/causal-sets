@@ -20,7 +20,7 @@ export default class Board extends PIXI.Container {
   edges: Edge[] = [];
   antiedges: Edge[] = [];
   private foreground: PIXI.Container = new PIXI.Container();
-  private nodesHolder: PIXI.Container = new PIXI.Container();
+  nodesHolder: PIXI.Container = new PIXI.Container();
   private onClickBackgroundDiamond: (d: Diamond) => void;
   boardShapeGraphic = new PIXI.Graphics();
   edgesHolder = new PIXI.Container();
@@ -133,6 +133,19 @@ export default class Board extends PIXI.Container {
     diamond.position.set(x, y);
   }
 
+  addBlanks() {
+    // For every coord without a tile, create a blank tile and airdrop it in
+    for (let i = 0; i < this.dimension; i++) {
+      for (let j = 0; j < this.dimension; j++) {
+        const d = new Diamond({ isBackground: false });
+        d.coords = [i, j];
+        this.foreground.addChild(d);
+        this.positionDiamond(d);
+        this.addDiamond(d);
+      }
+    }
+  }
+
   airDropBlanks(blanks = true) {
     let decalation = 0;
     const dropDistance = 40;
@@ -233,6 +246,12 @@ export default class Board extends PIXI.Container {
     const newEdges = this.drawEdges();
 
     // Update scoring of nodes!
+    this.checkScoringNodes();
+
+    return { didAdd: true, newEdges };
+  }
+
+  checkScoringNodes() {
     for (const node of this.nodes) {
       if (node.type == "normal") {
         continue;
@@ -259,7 +278,6 @@ export default class Board extends PIXI.Container {
         TextWisp.makeWisp(this, node.x, node.y - 25, "+5", Colour.DARK);
       }
     }
-    return { didAdd: true, newEdges };
   }
 
   setConeForNode(n: Node) {
@@ -337,17 +355,13 @@ export default class Board extends PIXI.Container {
 
     // Extract all points from nodes
     const points = [];
-    for (const d of this.foregroundDiamonds) {
-      for (const p of d.points) {
-        points.push({
-          point: p,
-          diamond: d,
-          x: p.x,
-          y: p.y,
-        });
-        p.reset();
-        //p.setColour(0x7ba0d9);
-      }
+    for (const n of this.nodes) {
+      points.push({
+        point: n,
+        x: n.x,
+        y: n.y,
+      });
+      n.reset();
     }
     const roots = [...points];
     const antiroots = [...points];

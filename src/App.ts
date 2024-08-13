@@ -36,10 +36,15 @@ export default class App extends PIXI.Application {
     });
     await PIXI.Assets.load(["fredoka.fnt", "spritesheet.json", "cutout.png"]);
 
-    this.setScreen(new MainScreen(false));
-
-    // If you haven't yet completed a run...add the First Time modal
-    this.addModal(new FirstTimeModal());
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("state")) {
+      const main = new MainScreen(false);
+      main.loadState(urlParams.get("state"));
+      this.setScreen(main);
+    } else {
+      this.setScreen(new MainScreen(false));
+      this.addModal(new FirstTimeModal());
+    }
 
     PIXI.Ticker.shared.add((tick) => Actions.tick(tick.deltaTime / 60));
   }
