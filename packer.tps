@@ -238,6 +238,7 @@
             <key type="filename">pre-pack/btnbg.png</key>
             <key type="filename">pre-pack/btnplay.png</key>
             <key type="filename">pre-pack/btntutorial.png</key>
+            <key type="filename">pre-pack/btnvideo.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0,0</point_f>
@@ -324,6 +325,83 @@
                 <rect>11,15,23,31</rect>
                 <key>scale9Paddings</key>
                 <rect>11,15,23,31</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">pre-pack/glossary-antichain.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0,0</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>18,9,37,17</rect>
+                <key>scale9Paddings</key>
+                <rect>18,9,37,17</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">pre-pack/glossary-chain.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0,0</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>10,23,21,45</rect>
+                <key>scale9Paddings</key>
+                <rect>10,23,21,45</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">pre-pack/glossary-future.png</key>
+            <key type="filename">pre-pack/glossary-past.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0,0</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,9,31,18</rect>
+                <key>scale9Paddings</key>
+                <rect>16,9,31,18</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">pre-pack/glossary-lightcone.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0,0</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,16,31,31</rect>
+                <key>scale9Paddings</key>
+                <rect>16,16,31,31</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">pre-pack/glossary-maximal.png</key>
+            <key type="filename">pre-pack/glossary-minimal.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0,0</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>10,10,19,19</rect>
+                <key>scale9Paddings</key>
+                <rect>10,10,19,19</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

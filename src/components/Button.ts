@@ -15,7 +15,11 @@ export default class Button extends PIXI.Container {
     this.foreground = PIXI.Sprite.from(textureName + ".png");
 
     // Shadow
-    this.background = PIXI.Sprite.from("btnbg.png");
+    if (textureName.endsWith("small")) {
+      this.background = PIXI.Sprite.from("btnbgsmall.png");
+    } else {
+      this.background = PIXI.Sprite.from("btnbg.png");
+    }
 
     this.addChild(this.background);
     this.addChild(this.foreground);
