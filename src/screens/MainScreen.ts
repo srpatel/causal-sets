@@ -778,9 +778,7 @@ export default class MainScreen extends Screen {
         a: this.action,
         n: this.board.nodes.map((n) => [n.x, n.y, n.type]),
       };
-      const link = `https://sunil.page/temp/causal-sets/?state=${this.stringToBase64(
-        JSON.stringify(state),
-      )}`;
+      const link = `https://sunil.page/games/causal-sets/`;
       const shareText = `Causal Sets Game\nScore: ${this.score}\n${link}`;
       navigator.clipboard
         .writeText(shareText)
