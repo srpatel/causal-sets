@@ -27,7 +27,7 @@ export default class MainScreen extends Screen {
   private tutorialSteps = [
     {
       name: "SELECT_TILE",
-      message: "Select this tile. It costs 2 Energy.",
+      message: "Select this tile. It costs 2 Resources.",
       messagePosition: {
         attachTo: () => this.diamonds[1],
         placement: "above",
@@ -56,7 +56,7 @@ export default class MainScreen extends Screen {
     },
     {
       name: "SELECT_TILE",
-      message: "Select this tile.\nIt costs 1 Energy.",
+      message: "Select this tile.\nIt costs 1 Resource.",
       messagePosition: {
         attachTo: () => this.diamonds[2],
         placement: "above",
@@ -691,11 +691,11 @@ export default class MainScreen extends Screen {
       this.addChild(this.moneyTriangle);
 
       const label = new PIXI.BitmapText({
-        text: "Energy",
+        text: "Resources",
         style: Font.makeFontOptions("small"),
       });
       label.anchor.set(0.5);
-      label.position.set(-20, 65);
+      label.position.set(-15, 65);
       label.tint = Colour.DARK;
       this.moneyTriangle.addChild(label);
     }
@@ -778,7 +778,7 @@ export default class MainScreen extends Screen {
         a: this.action,
         n: this.board.nodes.map((n) => [n.x, n.y, n.type]),
       };
-      const link = `http://localhost:5173/?state=${this.stringToBase64(
+      const link = `https://sunil.page/temp/causal-sets/?state=${this.stringToBase64(
         JSON.stringify(state),
       )}`;
       const shareText = `Causal Sets Game\nScore: ${this.score}\n${link}`;
