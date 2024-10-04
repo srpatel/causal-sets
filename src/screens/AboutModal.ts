@@ -110,7 +110,10 @@ export default class AboutModal extends Modal {
       this.btnrow.push(b);
     }
     {
-      const b = new Button("btnvideosmall", () => {});
+      const b = new Button("btnytsmall", () => {
+        // Nat video
+        window.open("https://www.youtube.com/watch?v=SgWtprobBMM", "_blank");
+      });
       this.addChild(b);
       this.btnrow.push(b);
     }
